@@ -32,8 +32,7 @@ function createGameDB(gameId){
 }
 // Create a new game database or open an existing one
 function getGameDB(gameId){
-    const dbDir = path.join(__dirname, '..', 'games');
-    const dbPath = path.join(dbDir, '${gameId}.db');
+    const dbPath = getDBPath(gameId);// Get the path to the game database
     if(!fs.existsSync(dbPath)) return null; // if database does not exist, return null
     return new Database(dbPath);
 }
