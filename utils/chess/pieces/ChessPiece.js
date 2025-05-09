@@ -1,13 +1,17 @@
 class ChessPiece{
     constructor(color, position) {
         this.color = color; // 'white' or 'black'
-        this.position = position; // { file: a-h, Rank: 1-8 }
+        this.position = position; // { x: 0-7, y: 0-7 }
     }
     getPosition() {
-        return this.position; // { file: a-h, rank: 1-8 }
+        return this.position; // { x: 0-7, y: 0-7 }
+    }
+    getPositionAlpha() {
+        let pos = String.fromCharCode(this.position.x + 97) + (this.position.y + 1); // Convert x to letter (0-7 to a-h), adjust y +1
+        return pos; // { a-h, 0-7 }
     }
     setPosition(position) {
-        this.position = position; // { file: a-h, rank: 1-8 }
+        this.position = position; // { x: 0-7, y: 0-7 }
     }
     getColor() {
         return this.color; // 'white' or 'black'
@@ -27,3 +31,4 @@ class ChessPiece{
         throw new Error('getPieceType() must be implemented in subclasses');
     }
 }
+module.exports = ChessPiece; // Export the ChessPiece class
