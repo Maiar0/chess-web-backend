@@ -4,7 +4,7 @@ class ChessBoard {
     constructor(fen) {
         this.fen = fen; // FEN string representing the board state
         this.board = this.createBoard(); // Create the board based on the FEN string
-        //en passante?
+        this.moveData();
         
     }
     createBoard() {
@@ -24,7 +24,7 @@ class ChessBoard {
             }
         }
         return board; // Return the created board 
-        
+
     }
     moveData(){
         let fenFields = this.fen.split(' ');
