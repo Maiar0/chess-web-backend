@@ -4,6 +4,7 @@ class ChessBoard {
     constructor(fen) {
         this.fen = fen; // FEN string representing the board state
         this.board = this.createBoard(); // Create the board based on the FEN string
+        //en passante?
         
     }
     createBoard() {
@@ -18,12 +19,20 @@ class ChessBoard {
                 if(isNaN(pieceChar)){
                     piece = ChessPieceFactory.createPiece(pieceChar); // Create a piece using the factory
                     piece.position = {x: i, y: 7-o }; // Set the position of the piece
-                    board[i][8-o] = piece; // Place the piece on the board
+                    board[i][7-o] = piece; // Place the piece on the board
                 }else o += pieceChar -1; // If the character is a number, skip that many squares
-                console.log(pieceChar, piece, i, o); // Log the character and piece for debugging
             }
         }
-        return board; // Return the created board
+        return board; // Return the created board 
+        
+    }
+    moveData(){
+        let fenFields = this.fen.split(' ');
+        this.activeColor = fenFields[1];
+        this.castlingAvaible = fenFields[2];
+        this.enPassante = fenFields[3];
+        this.halfmove = fenFields[4];
+        this.fullmove = fenFields[5];
     }
 }
 module.exports = ChessBoard; // Export the ChessBoard class
