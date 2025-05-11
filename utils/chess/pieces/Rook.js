@@ -32,6 +32,9 @@ class Rook extends ChessPiece {
         }
         return moves; // Return the array of possible moves
     }
+    getFen() {
+        return this.color === 'white' ? 'R' : 'r'; // Return the FEN representation of the piece
+    }
 
 }
 module.exports = Rook; // Export the Rook class

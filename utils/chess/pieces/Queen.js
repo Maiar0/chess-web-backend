@@ -36,5 +36,8 @@ class Queen extends ChessPiece {
         }
         return moves; // Return the array of possible moves
     }
+    getFen() {
+        return this.color === 'white' ? 'Q' : 'q'; // Return the FEN representation of the piece
+    }
 }
 module.exports = Queen; // Export the Rook class

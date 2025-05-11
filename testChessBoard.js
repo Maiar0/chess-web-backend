@@ -19,9 +19,13 @@ const fenPositions = [
     // 6. White ready to promote pawn
     "8/4k3/8/8/8/8/5P2/4K3 w - - 0 80"
 ];
-const chessBoard = new ChessBoard(fenPositions[3]); // Create a new chess board with the given FEN string
+let fen = fenPositions[0]; // FEN string for the chess board
+const chessBoard = new ChessBoard(fen); // Create a new chess board with the given FEN string
 console.log(chessBoard.board); // Log the board to the console
 console.log(chessBoard.activeColor, chessBoard.castlingAvaible, chessBoard.enPassante, chessBoard.halfmove, chessBoard.fullmove)
 console.log(chessBoard.isOccupied(0, 0) === true); // Check if the square at (0, 0) is occupied
-console.log(chessBoard.isOccupied(2, 1) === false); // Check if the square at (2, 1) is occupied
+console.log(chessBoard.isOccupied(2, 2) === false); // Check if the square at (2, 1) is occupied
+console.log(chessBoard.fen); // Log the FEN string to the console
+console.log(chessBoard.createFen() === fen); // Check if the FEN string is correct
+console.log(chessBoard.fen);
 

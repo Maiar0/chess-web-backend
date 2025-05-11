@@ -32,6 +32,9 @@ class Knight extends ChessPiece {
         }
         return moves; // Return the array of possible moves
     }
+    getFen() {
+        return this.color === 'white' ? 'N' : 'n'; // Return the FEN representation of the piece
+    }
     
 }
 module.exports = Knight; // Export the Rook class

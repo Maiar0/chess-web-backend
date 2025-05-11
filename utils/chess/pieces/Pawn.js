@@ -43,5 +43,8 @@ class Pawn extends ChessPiece {
         }
         return moves; // Return the array of possible moves
     }
+    getFen() {
+        return this.color === 'white' ? 'P' : 'p'; // Return the FEN representation of the piece
+    }
 }
 module.exports = Pawn; // Export the Pawn class

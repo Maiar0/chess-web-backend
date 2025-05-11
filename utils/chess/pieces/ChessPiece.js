@@ -30,5 +30,10 @@ class ChessPiece{
         // This method should be overridden by subclasses
         throw new Error('getPieceType() must be implemented in subclasses');
     }
+    getFen() {
+        // Return the FEN representation of the piece
+        // This method should be overridden by subclasses
+        throw new Error('getFen() must be implemented in subclasses');
+    }
 }
 module.exports = ChessPiece; // Export the ChessPiece class

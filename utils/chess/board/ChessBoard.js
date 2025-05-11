@@ -30,6 +30,30 @@ class ChessBoard {
         return board; // Return the created board 
 
     }
+    createFen(){
+        let fen = '';
+        for(let i = 0; i < 8; i++){
+            let empty = 0;
+            for(let o = 0; o < 8; o++){
+                if(this.board[o][i] === null){
+                    empty++;
+                }else{
+                    if(empty > 0) fen += empty; // Add the number of empty squares
+                    fen += this.board[o][i].getFen(); // Add the piece's FEN representation
+                    empty = 0; // Reset the empty counter
+                }
+            }
+            if(empty > 0) fen += empty; // Add any remaining empty squares at the end of the row
+            if(i < 7) fen += '/'; // Add a slash between rows
+        }
+        fen += ' ' + this.activeColor + ' '; // Add the active color
+        fen += this.castlingAvaible + ' '; // Add castling availability 
+        fen += this.enPassante !== '-' ? String.fromCharCode(this.enPassante.x + 97) + (this.enPassante.y + 1) : '-'; // Add en passant target square
+        fen += ' ' + this.halfmove + ' '; // Add halfmove clock
+        fen += this.fullmove; // Add fullmove number
+        
+        return fen; // Return the FEN string representation of the board
+    }
     moveData(){
         let fenFields = this.fen.split(' ');
         this.activeColor = fenFields[1];
