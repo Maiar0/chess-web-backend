@@ -19,10 +19,10 @@ class Rook extends ChessPiece {
             while (board.boundsCheck(x, y)) {
                 const piece = board.getPiece(x,y); // Get the piece at the new position
                 if(piece === null ){
-                    moves.push({ x: x, y: y }); // Add the move to the list if the square is empty
+                    moves.push({ x: x, y: y, capture: false }); // Add the move to the list if the square is empty
                 }else{
                     if(piece.color !== this.color){
-                        moves.push({ x: x, y: y }); // Capture
+                        moves.push({ x: x, y: y, capture: true }); // Capture
                     }
                     break; //Stop moving in this direction if a piece is encountered
                 }

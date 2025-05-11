@@ -16,10 +16,10 @@ class Pawn extends ChessPiece {
         const piece= () => board.getPiece(evaluateX, evaluateY); // Get the piece at the new position
         //Movement Logic
         if(piece() === null) {// Move forward one square
-            moves.push({ x: evaluateX, y: evaluateY });
+            moves.push({ x: evaluateX, y: evaluateY, capture: false }); // Add the move to the array
             evaluateY = this.position.y + 2 * direction; 
             if(this.position.y === startRank && piece() === null){ // Check if the pawn is on its starting rank and the square is empty
-                moves.push({ x: evaluateX, y: evaluateY }); 
+                moves.push({ x: evaluateX, y: evaluateY, capture: false }); 
             }
         }
 
@@ -27,18 +27,18 @@ class Pawn extends ChessPiece {
         evaluateX = this.position.x + 1; // Evaluate the Right diagonal square   
         evaluateY = this.position.y + direction; // Evaluate the forward square
         if(piece() !== null && piece().color !== this.color){
-            moves.push({ x: evaluateX, y: evaluateY }); // Capture diagonally to the right
+            moves.push({ x: evaluateX, y: evaluateY, capture: true }); // Capture diagonally to the right
         }else if(board.enPassante !== '-'){
             if(board.enPassante.x === evaluateX && board.enPassante.y == this.position.y){
-                moves.push({ x: evaluateX, y: evaluateY}); // En passant capture to the right
+                moves.push({ x: evaluateX, y: evaluateY, capture: true}); // En passant capture to the right
             }
         }
         evaluateX = this.position.x - 1; // Evaluate the Left diagonal square
         if(piece() !== null && piece().color !== this.color){
-            moves.push({ x: evaluateX, y: evaluateY }); // Capture diagonally to the left
+            moves.push({ x: evaluateX, y: evaluateY, capture: true }); // Capture diagonally to the left
         }else if(board.enPassante !== '-'){
             if(board.enPassante.x === evaluateX && board.enPassante.y == this.position.y){
-                moves.push({ x: evaluateX, y: evaluateY}); // En passant capture to the Left
+                moves.push({ x: evaluateX, y: evaluateY, capture: true}); // En passant capture to the Left
             }
         }
         return moves; // Return the array of possible moves
