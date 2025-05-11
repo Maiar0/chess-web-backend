@@ -12,15 +12,19 @@ class ChessBoard {
         const board = Array.from({ length: 8 }, () => Array(8).fill(null));
         let rows = this.fen.split(' ')[0].split('/'); // Split the FEN string into rows
         for (let i = 0; i < rows.length; i++){
-            let piece;
             let row = rows[i];
+            let x = 0; // Board file index
+
             for(let o = 0; o < row.length; o++){
-                let pieceChar = row[o];
+                const pieceChar = row[o];
+
                 if(isNaN(pieceChar)){
-                    piece = ChessPieceFactory.createPiece(pieceChar); // Create a piece using the factory
-                    piece.position = {x: o, y: 7-i }; // Set the position of the piece
-                    board[o][7-i] = piece; // Place the piece on the board
-                }else o += pieceChar -1; // If the character is a number, skip that many squares
+                    const piece = ChessPieceFactory.createPiece(pieceChar); // Create a piece using the factory
+                    piece.position = {x: x, y: 7-i }; // Set the position of the piece
+                    board[x][7-i] = piece; // Place the piece on the board
+                    x++; // Move to the next file
+                }else x += parseInt(pieceChar, 10); // If the character is a number, skip that many squares
+                
             }
         }
         return board; // Return the created board 
@@ -43,6 +47,14 @@ class ChessBoard {
         // Get the piece at the square (x, y)
         if(this.board[x][y] === null) return null; // If the square is empty, return null
         return this.board[x][y];
+    }
+    boundsCheck(x, y) {
+        // Check if the coordinates are within the bounds of the board
+        if(x < 0 || x > 7 || y < 0 || y > 7){
+            console.log("Out of bounds: ", x, y); 
+            return false; 
+        }
+        return true;
     }
 }
 module.exports = ChessBoard; // Export the ChessBoard class
