@@ -5,6 +5,7 @@ class ChessBoard {
         this.fen = fen; // FEN string representing the board state
         this.board = this.createBoard(); // Create the board based on the FEN string
         this.moveData();
+        this.threatMap = this.threatMap();
         
     }
     createBoard() {
