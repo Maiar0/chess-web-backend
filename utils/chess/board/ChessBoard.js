@@ -31,27 +31,38 @@ class ChessBoard {
 
     }
     createFen(){
-        let fen = '';
+        let fenArray = [];
         for(let i = 0; i < 8; i++){
-            let empty = 0;
+            fenArray[i] = '';
+            let count = 0; // Counter for empty squares
             for(let o = 0; o < 8; o++){
-                if(this.board[o][i] === null){
-                    empty++;
+                const piece = this.board[o][i]; // Get the piece at the current position
+                if (piece === null){
+                    count++;
                 }else{
-                    if(empty > 0) fen += empty; // Add the number of empty squares
-                    fen += this.board[o][i].getFen(); // Add the piece's FEN representation
-                    empty = 0; // Reset the empty counter
+                    if(count > 0){
+                        fenArray[i] += count; // Add the number of empty squares to the FEN string
+                        count = 0; // Reset the counter
+                    }
+                    fenArray[i] += piece.getFen(); // Get the FEN representation of the piece
                 }
             }
-            if(empty > 0) fen += empty; // Add any remaining empty squares at the end of the row
-            if(i < 7) fen += '/'; // Add a slash between rows
+            if(count > 0){
+                fenArray[i] += count; // Add the number of empty squares to the FEN string
+                count = 0; // Reset the counter
+            }
+        }
+        let fen = '';
+        for(let i = fenArray.length - 1; i >= 0; i--){
+            fen += fenArray[i]; // Concatenate the rows to form the FEN string
+            if(i > 0) fen += '/'; // Add a slash between rows
         }
         fen += ' ' + this.activeColor + ' '; // Add the active color
         fen += this.castlingAvaible + ' '; // Add castling availability 
         fen += this.enPassante !== '-' ? String.fromCharCode(this.enPassante.x + 97) + (this.enPassante.y + 1) : '-'; // Add en passant target square
         fen += ' ' + this.halfmove + ' '; // Add halfmove clock
         fen += this.fullmove; // Add fullmove number
-        
+
         return fen; // Return the FEN string representation of the board
     }
     moveData(){

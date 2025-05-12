@@ -33,7 +33,7 @@ class Bishop extends ChessPiece {
         return moves; // Return the array of possible moves
     }
     getFen() {
-        return this.color === 'w' ? 'B' : 'b'; // Return the FEN representation of the piece
+        return this.color === 'white' ? 'B' : 'b'; // Return the FEN representation of the piece
     }
 }
 module.exports = Bishop; // Export the Rook class

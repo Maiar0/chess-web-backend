@@ -26,6 +26,5 @@ console.log(chessBoard.activeColor, chessBoard.castlingAvaible, chessBoard.enPas
 console.log(chessBoard.isOccupied(0, 0) === true); // Check if the square at (0, 0) is occupied
 console.log(chessBoard.isOccupied(2, 2) === false); // Check if the square at (2, 1) is occupied
 console.log(chessBoard.fen); // Log the FEN string to the console
-console.log(chessBoard.createFen() === fen); // Check if the FEN string is correct
-console.log(chessBoard.fen);
+console.log(chessBoard.createFen() === chessBoard.fen); // Create a FEN string from the current board state
 
