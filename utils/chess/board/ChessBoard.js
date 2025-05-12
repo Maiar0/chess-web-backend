@@ -73,6 +73,27 @@ class ChessBoard {
         this.halfmove = fenFields[4];
         this.fullmove = fenFields[5];
     }
+    threatMap(){
+        this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
+        for(let i = 0; i < 8; i++){
+            for(let o = 0; o < 8; o++){
+                const piece = this.board[i][o]; // Get the piece at the current position
+                if(piece !== null && piece.constructor.name !== 'Pawn'){ // Check if the piece is not null and belongs to the opponent
+                    const moves = piece.getMoves(this); // Get the possible moves for the piece
+                    for(let move of moves){
+                        this.threatMap[move.x][move.y] = true;
+                    }
+                }
+                if(piece !== null && piece.constructor.name === 'Pawn'){ // Check if the piece is not null and belongs to the opponent
+                    const moves = piece.getCaptureMoves(this); // Get the possible moves for the piece
+                    for(let move of moves){
+                        this.threatMap[move.x][move.y] = true;
+                    }
+                }
+            }
+        }
+        return this.threatMap; // Return the threat map
+    }
     isOccupied(x, y) {
         // Check if the square at (x, y) is occupied by a piece
         return this.board[x][y] !== null;
@@ -86,7 +107,7 @@ class ChessBoard {
     boundsCheck(x, y) {
         // Check if the coordinates are within the bounds of the board
         if(x < 0 || x > 7 || y < 0 || y > 7){
-            console.log("Out of bounds: ", x, y); 
+            //console.log("Out of bounds: ", x, y); 
             return false; 
         }
         return true;

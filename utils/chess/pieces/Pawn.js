@@ -12,7 +12,6 @@ class Pawn extends ChessPiece {
 
         let evaluateX = this.position.x; // Tile that needs to be evaluated
         let evaluateY = this.position.y + direction; // Tile that needs to be evaluated
-        console.log(evaluateX, evaluateY);
         const piece= () => board.getPiece(evaluateX, evaluateY); // Get the piece at the new position
         //Movement Logic
         if(piece() === null) {// Move forward one square
@@ -42,6 +41,25 @@ class Pawn extends ChessPiece {
             }
         }
         return moves; // Return the array of possible moves
+    }
+    getCaptureMoves(board) {
+        const moves = []; // Array to store possible moves
+        const direction = this.color === 'white' ? 1 : -1; // Determine the direction of movement based on color
+        let evaluatX = this.position.x + 1; // Evaluate the Right diagonal square
+        let evaluateY = this.position.y + direction;
+        if(board.boundsCheck(evaluatX,evaluateY)) moves.push({ x: evaluatX, y: evaluateY, capture: true }); // Capture diagonally to the right
+        evaluatX = this.position.x - 1; // Evaluate the Left diagonal square    
+        if(board.boundsCheck(evaluatX,evaluateY)) moves.push({ x: evaluatX, y: evaluateY, capture: true }); // Capture diagonally to the left
+        // Check if the en passant target square is valid for capture
+        if (board.enPassante !== '-') {
+            if (board.enPassante.x === evaluatX && board.enPassante.y === this.position.y) {
+                moves.push({ x: evaluatX, y: evaluateY, capture: true }); // En passant capture to the left
+            }
+            if (board.enPassante.x === evaluatX && board.enPassante.y === this.position.y) {
+                moves.push({ x: evaluatX, y: evaluateY, capture: true }); // En passant capture to the right
+            }
+        }
+        return moves;
     }
     getFen() {
         return this.color === 'white' ? 'P' : 'p'; // Return the FEN representation of the piece

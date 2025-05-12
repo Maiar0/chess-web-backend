@@ -15,7 +15,6 @@ class Rook extends ChessPiece {
         for  (const {dx, dy} of directions) {
             let x = this.position.x + dx;
             let y = this.position.y + dy;
-            console.log("x: ", x, "y: ", y);
             while (board.boundsCheck(x, y)) {
                 const piece = board.getPiece(x,y); // Get the piece at the new position
                 if(piece === null ){
