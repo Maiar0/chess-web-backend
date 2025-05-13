@@ -1,12 +1,16 @@
 const ChessBoard = require('./board/ChessBoard');
-const dbManager = require('../db/dbManager');
-const { getGameDB, createGameDB } = require('../../db/dbManager');
+const { getGameDB, createGameDB, getGameFen, setGameFen } = require('../../db/dbManager');
 
 class ChessGameService{
     constructor(gameId){
-        if(gameId === undefined) this.gameId = this.createGameId;
-        this.officialFen = createGameDB(this.gameId);
-        this.chessBoard = new ChessBoard(this.officialFen);
+        if(gameId === undefined) {
+            this.gameId = this.createGameId();
+            createGameDB(this.gameId);
+        }else{
+            this.gameId = gameId;
+        }
+        this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
+        this.chessBoard = new ChessBoard(this.officialFen); // Create a new chess board using the FEN string
     }
     createGameId(){
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -19,11 +23,14 @@ class ChessGameService{
     requestMove(from, to){
         if(this.validateMove(from,to)){//Check if piece can move
             if(this.chessBoard.board[to.x][to.y] !== null){//Check if move is capture
+                console.log('Capturing piece from', from, 'to', to);
                 return this.chessBoard.capturePiece(from, to);
             }else{// Not a capture
+                console.log('Moving piece from', from, 'to', to);
                 return this.chessBoard.movePiece(from, to);
             }
         }else{
+            console.log('Invalid move from', from, 'to', to);
             return false; //TODO:: terminate?
         }
     }
@@ -35,13 +42,14 @@ class ChessGameService{
         }
     }
     validateMove(from, to){
-        let possibleMoves = this.chessBoard.getPiece(from.x,from.y).getMoves(this.chessBoard.board)
+        let possibleMoves = this.chessBoard.getPiece(from.x,from.y).getMoves(this.chessBoard);
+        let result = false;
         possibleMoves.forEach(element => {
             if (element.x === to.x && element.y === to.y){
-                return true;
+                result = true; // Move is valid
             }
         });
-        return false;
+        return result; // Return the result of the validation
     }
     validateCheck(color){
         if(this.chessBoard.activeColor !== color) this.chessBoard.generateThreatMap(color); // TODO:: This may cause an issues not able to test yet.
@@ -52,5 +60,10 @@ class ChessGameService{
         }
         else false; // The king is not in check
     }
-    
+    saveFen(){
+        //Save Fen back to database
+        this.chessBoard.fen = this.chessBoard.createFen(); // TODO:: This is dumb
+        setGameFen(this.gameId, this.chessBoard.fen); // Save the current FEN string to the database
+    }
 }
+module.exports = ChessGameService;

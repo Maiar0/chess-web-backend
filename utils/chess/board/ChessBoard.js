@@ -112,7 +112,7 @@ class ChessBoard {
     movePiece(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
         const empty = this.board[to.x][to.y]; // Get the piece at the to position
-        if(movingPiece !== null && empty !== null){ // Check if the piece is not null
+        if(movingPiece !== null && empty === null){ // Check if the piece is not null
             this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
@@ -165,6 +165,40 @@ class ChessBoard {
             return false; 
         }
         return true;
+    }
+    printBoard(){
+        let fenArray = [];
+        for(let i = 0; i < 8; i++){
+            fenArray[i] = '';
+            let count = 0; // Counter for empty squares
+            for(let o = 0; o < 8; o++){
+                const piece = this.board[o][i]; // Get the piece at the current position
+                if (piece === null){
+                    count++;
+                }else{
+                    if(count > 0){
+                        fenArray[i] += count; // Add the number of empty squares to the FEN string
+                        count = 0; // Reset the counter
+                    }
+                    fenArray[i] += piece.getFen(); // Get the FEN representation of the piece
+                }
+            }
+            if(count > 0){
+                fenArray[i] += count; // Add the number of empty squares to the FEN string
+                count = 0; // Reset the counter
+            }
+        }
+        let fen = '';
+        for(let i = fenArray.length - 1; i >= 0; i--){
+            console.log(fenArray[i]); // Log the FEN string for each row
+        }
+        fen += ' ' + this.activeColor + ' '; // Add the active color
+        fen += this.castlingAvaible + ' '; // Add castling availability 
+        fen += this.enPassante !== '-' ? String.fromCharCode(this.enPassante.x + 97) + (this.enPassante.y + 1) : '-'; // Add en passant target square
+        fen += ' ' + this.halfmove + ' '; // Add halfmove clock
+        fen += this.fullmove; // Add fullmove number
+
+        return fen; // Return the FEN string representation of the board
     }
 }
 module.exports = ChessBoard; // Export the ChessBoard class
