@@ -60,6 +60,8 @@ function setGameFen(gameId, fen) {
     const stmt = db.prepare('UPDATE game_state SET fen = ? WHERE id = ?');
     stmt.run(fen, 1); // or use whatever your row-id is
     db.close();
+
+    return stmt.changes > 0;
 }
 
 module.exports = {

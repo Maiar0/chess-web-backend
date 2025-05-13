@@ -20,6 +20,26 @@ class ChessGameService{
         }
         return result;
     }
+    handleAction({action, from, to, promoteTo}){
+        let result = false;
+        switch(action){
+            case 'move':
+                result = this.requestMove(from,to);
+                break;
+            case 'promote':
+                result = this.requestPromotion(from, to, promoteTo);
+                break;
+            default: 
+                console.log("Action Unknown!?!");
+        }
+        if(result){
+            this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';
+            return true;
+        }else{
+            console.log("Failed to:", action)
+            return false;
+        }
+    }
     requestMove(from, to){
         if(this.validateMove(from,to)){//Check if piece can move
             if(this.chessBoard.board[to.x][to.y] !== null){//Check if move is capture
@@ -42,7 +62,9 @@ class ChessGameService{
         }
     }
     validateMove(from, to){
-        let possibleMoves = this.chessBoard.getPiece(from.x,from.y).getMoves(this.chessBoard);
+        let piece = this.chessBoard.getPiece(from.x,from.y);
+        if(piece === null){return false;}
+        let possibleMoves = piece.getMoves(this.chessBoard);
         let result = false;
         possibleMoves.forEach(element => {
             if (element.x === to.x && element.y === to.y){
@@ -63,7 +85,7 @@ class ChessGameService{
     saveFen(){
         //Save Fen back to database
         this.chessBoard.fen = this.chessBoard.createFen(); // TODO:: This is dumb
-        setGameFen(this.gameId, this.chessBoard.fen); // Save the current FEN string to the database
+        return setGameFen(this.gameId, this.chessBoard.fen); // Save the current FEN string to the database
     }
 }
 module.exports = ChessGameService;
