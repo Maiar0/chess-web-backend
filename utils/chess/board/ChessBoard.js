@@ -5,7 +5,9 @@ class ChessBoard {
         this.fen = fen; // FEN string representing the board state
         this.board = this.createBoard(); // Create the board based on the FEN string
         this.moveData();
-        this.threatMap = this.threatMap();
+        this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
+        let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
+        this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
         
     }
     createBoard() {
@@ -74,18 +76,17 @@ class ChessBoard {
         this.halfmove = fenFields[4];
         this.fullmove = fenFields[5];
     }
-    threatMap(){
-        this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
+    generateThreatMap(color){
         for(let i = 0; i < 8; i++){
             for(let o = 0; o < 8; o++){
                 const piece = this.board[i][o]; // Get the piece at the current position
-                if(piece !== null && piece.constructor.name !== 'Pawn'){ // Check if the piece is not null and belongs to the opponent
+                if(piece !== null && piece.constructor.name !== 'Pawn' && piece.color === color){ // Check if the piece is not null and belongs to the opponent
                     const moves = piece.getMoves(this); // Get the possible moves for the piece
                     for(let move of moves){
                         this.threatMap[move.x][move.y] = true;
                     }
                 }
-                if(piece !== null && piece.constructor.name === 'Pawn'){ // Check if the piece is not null and belongs to the opponent
+                if(piece !== null && piece.constructor.name === 'Pawn' && piece.color === color){ // Check if the piece is not null and belongs to the opponent
                     const moves = piece.getCaptureMoves(this); // Get the possible moves for the piece
                     for(let move of moves){
                         this.threatMap[move.x][move.y] = true;
@@ -93,7 +94,15 @@ class ChessBoard {
                 }
             }
         }
-        return this.threatMap; // Return the threat map
+    }
+
+    isThreatened(x, y, color){
+        // Check if the square at (x, y) is threatened by the opponent's pieces
+        if(this.threatMap[x][y] === true){
+            return true; // The square is threatened
+        }else{
+            return false; // The square is not threatened
+        }
     }
     isOccupied(x, y) {
         // Check if the square at (x, y) is occupied by a piece
