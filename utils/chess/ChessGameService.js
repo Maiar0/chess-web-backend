@@ -19,19 +19,19 @@ class ChessGameService{
     requestMove(from, to){
         if(this.validateMove(from,to)){//Check if piece can move
             if(this.chessBoard.board[to.x][to.y] !== null){//Check if move is capture
-                this.chessBoard.capturePiece(from, to);
+                return this.chessBoard.capturePiece(from, to);
             }else{// Not a capture
-                this.chessBoard.movePiece(from, to);
+                return this.chessBoard.movePiece(from, to);
             }
         }else{
-            //TODO:: terminate?
+            return false; //TODO:: terminate?
         }
     }
     requestPromotion(from, to, promoteTo){
         let piece = this.chessBoard.getPiece(from.x,from.y);
         let promotionRank = 'white' === piece.color ? 7 : 0;
         if(piece.constructor.name === 'Pawn' && to.y === promotionRank){
-            this.chessBoard.promotePiece(from,to, promoteTo);
+            return this.chessBoard.promotePiece(from,to, promoteTo);
         }
     }
     validateMove(from, to){
