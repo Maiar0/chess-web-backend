@@ -105,8 +105,9 @@ class ChessBoard {
             this.board[from.x][from.y] = null;
             attacking.position = {x: to.x, y: to.y}; // Update the position of the piece
             captured.position = null; // Set the position of the captured piece to null
+            return true; // Return true to indicate a successful capture
         }
-
+        return false; // Return false if the capture was not successful
     }
     movePiece(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
@@ -115,7 +116,16 @@ class ChessBoard {
             this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
+            return true; // Return true to indicate a successful move
         }
+        return false;
+    }
+    promotePiece(from, to, promoteTo){//promoteTo is a char
+        if(this.movePiece(from, to)){
+            this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
+            return true; // Return true to indicate a successful promotion
+        };
+        return false; // Return false if the promotion was not successful 
     }
     isThreatened(x, y, color){
         // Check if the square at (x, y) is threatened by the opponent's pieces
