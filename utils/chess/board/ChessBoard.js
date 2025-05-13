@@ -4,6 +4,7 @@ class ChessBoard {
     constructor(fen) {
         this.fen = fen; // FEN string representing the board state
         this.board = this.createBoard(); // Create the board based on the FEN string
+        this.capturedPieces = []; // Array to store captured pieces
         this.moveData();
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
@@ -95,7 +96,18 @@ class ChessBoard {
             }
         }
     }
+    capturePiece(from, to){
+        const attacking = this.board[from.x][from.y]; // Get the piece at the from position
+        const captured = this.board[to.x][to.y]; // Get the piece at the to position
+        if(attacking !== null && captured !== null){ // Check if the piece is not null
+            this.capturedPieces.push(captured); // Add the piece to the captured pieces array
+            this.board[to.x][to.y] = attacking; // Remove the piece from the board
+            this.board[from.x][from.y] = null;
+            attacking.position = {x: to.x, y: to.y}; // Update the position of the piece
+            captured.position = null; // Set the position of the captured piece to null
+        }
 
+    }
     isThreatened(x, y, color){
         // Check if the square at (x, y) is threatened by the opponent's pieces
         if(this.threatMap[x][y] === true){
@@ -113,6 +125,19 @@ class ChessBoard {
         // Get the piece at the square (x, y)
         if(this.board[x][y] === null) return null; // If the square is empty, return null
         return this.board[x][y];
+    }
+    getPieces(color, suit) {
+        // Get all pieces of the specified color
+        const pieces = [];
+        for (let i = 0; i < 8; i++){
+            for (let o = 0; o < 8; o++){
+                const piece = this.board[i][o]; // Get the piece at the current position
+                if(piece !== null && piece.color === color && piece.constructor.name === suit){ // Check if the piece belongs to the specified color
+                    pieces.push(piece); // Add the piece to the list
+                }
+            }
+        }
+        return pieces; // Return the list of pieces of the specified color
     }
     boundsCheck(x, y) {
         // Check if the coordinates are within the bounds of the board

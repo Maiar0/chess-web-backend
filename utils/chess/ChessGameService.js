@@ -43,8 +43,14 @@ class ChessGameService{
         });
         return false;
     }
-    validateCheck(from, to){
-        //TODO:: Create threatmap exclusive to White and Black.
+    validateCheck(color){
+        if(this.chessBoard.activeColor !== color) this.chessBoard.generateThreatMap(color); // TODO:: This may cause an issues not able to test yet.
+        let king = this.chessBoard.getPieces(color, 'King')[0]; // Get the king of the specified color
+        let kingPosition = king.position; // Get the position of the king
+        if(this.chessBoard.isThreatened(kingPosition.x, kingPosition.y, color)){ // Check if the king is threatened
+            return true; // The king is in check
+        }
+        else false; // The king is not in check
     }
     
 }
