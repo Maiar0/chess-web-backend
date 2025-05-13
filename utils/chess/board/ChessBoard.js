@@ -108,6 +108,15 @@ class ChessBoard {
         }
 
     }
+    movePiece(from, to){
+        const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
+        const empty = this.board[to.x][to.y]; // Get the piece at the to position
+        if(movingPiece !== null && empty !== null){ // Check if the piece is not null
+            this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
+            this.board[from.x][from.y] = null; // Set the old position to null
+            movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
+        }
+    }
     isThreatened(x, y, color){
         // Check if the square at (x, y) is threatened by the opponent's pieces
         if(this.threatMap[x][y] === true){

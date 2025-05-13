@@ -31,7 +31,7 @@ class ChessGameService{
         let piece = this.chessBoard.getPiece(from.x,from.y);
         let promotionRank = 'white' === piece.color ? 7 : 0;
         if(piece.constructor.name === 'Pawn' && to.y === promotionRank){
-            this.chessBoard.promote(from,to, promoteTo);
+            this.chessBoard.promotePiece(from,to, promoteTo);
         }
     }
     validateMove(from, to){
