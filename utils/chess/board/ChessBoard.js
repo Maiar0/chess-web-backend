@@ -135,8 +135,9 @@ class ChessBoard {
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Reinitialize the threat map with false values
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
         this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
+        return true;
     }
-    isThreatened(x, y, color){
+    isThreatened(x, y, color){//TODO:: Make sure we account for color. 
         // Check if the square at (x, y) is threatened by the opponent's pieces
         if(this.threatMap[x][y] === true){
             return true; // The square is threatened

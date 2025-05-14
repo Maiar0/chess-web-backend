@@ -1,5 +1,6 @@
 const ChessBoard = require('./board/ChessBoard');
 const { getGameDB, createGameDB, getGameFen, setGameFen } = require('../../db/dbManager');
+const { response } = require('express');
 
 class ChessGameService{
     constructor(gameId){
@@ -33,12 +34,22 @@ class ChessGameService{
                 console.log("Action Unknown!?!");
         }
         if(result){
-            this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';
+            this.endTurn();
             return true;
         }else{
-            console.log("Failed to:", action)
+            console.log("Failed to:", action);
             return false;
         }
+    }
+    endTurn(){
+        let result = false;
+        this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';
+        if(this.saveFen()){
+            result = true;
+        }else{
+            result = false; 
+        }
+        return result;
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
