@@ -12,7 +12,7 @@ class ChessGameService{
         this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
         this.chessBoard = new ChessBoard(this.officialFen); // Create a new chess board using the FEN string
     }
-    createGameId(){
+    createGameId(){// Generate a random game ID
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
         for (let i = 0; i < 9; i++) {
@@ -20,7 +20,7 @@ class ChessGameService{
         }
         return result;
     }
-    handleAction({action, from, to, promoteTo}){
+    handleAction({action, from, to, promoteTo}){// Handle the action requested by the user
         let result = false;
         switch(action){
             case 'move':
@@ -40,7 +40,7 @@ class ChessGameService{
             return false;
         }
     }
-    requestMove(from, to){
+    requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
             if(this.chessBoard.board[to.x][to.y] !== null){//Check if move is capture
                 console.log('Capturing piece from', from, 'to', to);
@@ -54,14 +54,14 @@ class ChessGameService{
             return false; //TODO:: terminate?
         }
     }
-    requestPromotion(from, to, promoteTo){
+    requestPromotion(from, to, promoteTo){// Request a promotion from the user
         let piece = this.chessBoard.getPiece(from.x,from.y);
         let promotionRank = 'white' === piece.color ? 7 : 0;
         if(piece.constructor.name === 'Pawn' && to.y === promotionRank){
             return this.chessBoard.promotePiece(from,to, promoteTo);
         }
     }
-    validateMove(from, to){
+    validateMove(from, to){// Validate the move requested by the user
         let piece = this.chessBoard.getPiece(from.x,from.y);
         if(piece === null){return false;}
         let possibleMoves = piece.getMoves(this.chessBoard);
@@ -73,7 +73,7 @@ class ChessGameService{
         });
         return result; // Return the result of the validation
     }
-    validateCheck(color){
+    validateCheck(color){// Validate if the king is in check
         if(this.chessBoard.activeColor !== color) this.chessBoard.generateThreatMap(color); // TODO:: This may cause an issues not able to test yet.
         let king = this.chessBoard.getPieces(color, 'King')[0]; // Get the king of the specified color
         let kingPosition = king.position; // Get the position of the king

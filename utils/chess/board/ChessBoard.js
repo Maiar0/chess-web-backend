@@ -127,6 +127,15 @@ class ChessBoard {
         };
         return false; // Return false if the promotion was not successful 
     }
+    resetBoard(){
+        this.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Reset the FEN string to the initial state
+        this.board = this.createBoard(); // Reset the board to its initial state
+        this.capturedPieces = []; // Clear the captured pieces array
+        this.moveData(); // Reset the move data
+        this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Reinitialize the threat map with false values
+        let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
+        this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
+    }
     isThreatened(x, y, color){
         // Check if the square at (x, y) is threatened by the opponent's pieces
         if(this.threatMap[x][y] === true){
