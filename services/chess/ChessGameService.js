@@ -46,16 +46,11 @@ class ChessGameService{
             console.log("Failed to:", action);
             return false;
         }
-    }
+    }//TODO:: This needs removed
     endTurn(){
-        let result = false;
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';
-        if(this.saveFen()){
-            result = true;
-        }else{
-            result = false; 
-        }
-        return result;
+        this.saveFen(); // Save the current FEN string to the database
+        
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
@@ -67,8 +62,8 @@ class ChessGameService{
                 return this.chessBoard.movePiece(from, to);
             }
         }else{
-            console.log('Invalid move from', from, 'to', to);
-            return false; //TODO:: terminate?
+            console.log('Invalid move from', from, 'to', to, 'THIS SHOULD NOT PRINT');
+            return false; // Move is invalid
         }
     }
     requestPromotion(from, to, promoteTo){// Request a promotion from the user
@@ -76,11 +71,11 @@ class ChessGameService{
         let promotionRank = 'white' === piece.color ? 7 : 0;
         if(piece.constructor.name === 'Pawn' && to.y === promotionRank){
             return this.chessBoard.promotePiece(from,to, promoteTo);
-        }
+        }else throw new Error("requestPromotion: Invalid promotion request"); // Invalid promotion request
     }
     validateMove(from, to){// Validate the move requested by the user
         let piece = this.chessBoard.getPiece(from.x,from.y);
-        if(piece === null){return false;}
+        if(piece === null) throw new Error("validateMove: No piece at from position"); // Check if there is a piece at the from position
         let possibleMoves = piece.getMoves(this.chessBoard);
         let result = false;
         possibleMoves.forEach(element => {
@@ -88,6 +83,7 @@ class ChessGameService{
                 result = true; // Move is valid
             }
         });
+        if(!result) throw new Error("validateMove: Invalid move FROM is valid TO is invalid"); // Move is invalid
         return result; // Return the result of the validation
     }
     validateCheck(color){// Validate if the king is in check

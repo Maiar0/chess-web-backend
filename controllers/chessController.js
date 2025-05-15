@@ -11,14 +11,16 @@ exporrts.handle = (req, res) => {
         switch(action){
             case 'move':
                 if(svc.requestMove(from, to)){
-                    svc.endTurn();//TODO:: This needs tested apropriately
-                    result = true;
+                    if(svc.endTurn()){
+                        result = true;
+                    }//TODO:: This needs tested apropriately
                 }
                 break;
             case 'promote':
                 if(svc.requestPromotion(from, to, payload.promoteTo)){
-                    svc.endTurn();
-                    result = true;
+                    if(svc.endTurn()){
+                        result = true;
+                    }
                 }
                 break;
             case 'newGame'://TODO:: This needs implementaiton

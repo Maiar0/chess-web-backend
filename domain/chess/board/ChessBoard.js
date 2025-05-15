@@ -99,26 +99,24 @@ class ChessBoard {
     capturePiece(from, to){
         const attacking = this.board[from.x][from.y]; // Get the piece at the from position
         const captured = this.board[to.x][to.y]; // Get the piece at the to position
-        if(attacking !== null && captured !== null){ // Check if the piece is not null
+        if(captured !== null){ // Check if the piece is not null
             this.capturedPieces.push(captured); // Add the piece to the captured pieces array
             this.board[to.x][to.y] = attacking; // Remove the piece from the board
             this.board[from.x][from.y] = null;
             attacking.position = {x: to.x, y: to.y}; // Update the position of the piece
             captured.position = null; // Set the position of the captured piece to null
             return true; // Return true to indicate a successful capture
-        }
-        return false; // Return false if the capture was not successful
+        } else throw new Error('capturePiece: This is not a capture?'); // Throw an error if the capture was invalid
     }
     movePiece(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
         const empty = this.board[to.x][to.y]; // Get the piece at the to position
-        if(movingPiece !== null && empty === null){ // Check if the piece is not null
+        if(empty === null){ // Check if the piece is not null
             this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
             return true; // Return true to indicate a successful move
-        }
-        return false;
+        }else throw new Error('movePiece: This is a capture?');// Throw an error if the move is invalid
     }
     promotePiece(from, to, promoteTo){//promoteTo is a char
         if(this.movePiece(from, to)){

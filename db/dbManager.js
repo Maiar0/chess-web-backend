@@ -49,19 +49,23 @@ function getGameFen(gameId) {
     const stmt = db.prepare('SELECT fen FROM game_state WHERE id = ?');
     const row = stmt.get(1);      // or use whatever your row-id is
     db.close();
-
+    if (!row) throw new Error('No rows found. Check if the game ID is correct, or game has expired.');
     return row.fen; // Return the FEN string from the database
 }
 function setGameFen(gameId, fen) {
     const db = getGameDB(gameId);
-    if (!db) return null;
+    if (!db){
+        return null; // If the database does not exist, return null
+    }
 
     // Assumes you have a table `game_state(id INTEGER PRIMARY KEY, fen TEXT, ...)`
     const stmt = db.prepare('UPDATE game_state SET fen = ? WHERE id = ?');
     const info = stmt.run(fen, 1); // or use whatever your row-id is
     db.close();
-
-    return info.changes > 0;
+    if (info.changes === 0) {
+        throw new Error('No rows updated. Check if the game ID is correct.');
+    }
+    return info.changes;
 }
 
 module.exports = {
