@@ -1,4 +1,4 @@
-const ChessBoard = require('./utils/chess/board/ChessBoard');
+const ChessBoard = require('./services/chess/board/ChessBoard');
 
 const fenPositions = [
     // 1. Standard starting position

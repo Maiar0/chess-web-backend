@@ -30,6 +30,12 @@ class ChessGameService{
             case 'promote':
                 result = this.requestPromotion(from, to, promoteTo);
                 break;
+            case 'newGame':
+                result = true;
+                break;
+            case 'info':
+                result = true;
+                break;
             default: 
                 console.log("Action Unknown!?!");
         }

@@ -1,4 +1,4 @@
-const ChessPieceFactory = require('../pieces/ChessPieceFactory');
+const ChessPieceFactory = require('../../../services/chess/pieces/ChessPieceFactory');
 
 class ChessBoard {
     constructor(fen) {

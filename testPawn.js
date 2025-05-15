@@ -1,4 +1,4 @@
-const ChessBoard = require('./utils/chess/board/ChessBoard');
+const ChessBoard = require('./services/chess/board/ChessBoard');
 const Pawn = require('./utils/chess/pieces/Pawn');
 
 let chessBoard = new ChessBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq c3 0 1");

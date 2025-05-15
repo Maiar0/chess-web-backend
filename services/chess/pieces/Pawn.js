@@ -1,5 +1,5 @@
 const ChessPiece = require('./ChessPiece');
-const ChessBoard = require('../board/ChessBoard');
+const ChessBoard = require('../../../services/chess/board/ChessBoard');
 
 class Pawn extends ChessPiece {
     constructor(color, position) {
