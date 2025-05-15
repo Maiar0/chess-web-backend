@@ -1,9 +1,9 @@
-const Pawn = require('./Pawn');
-const Rook = require('./Rook');
-const Knight = require('./Knight');
+const Pawn = require('./Pawn.js');
+const Rook = require('./Rook.js');
+const Knight = require('./Knight.js');
 const Bishop = require('./Bishop.js');
-const Queen = require('./Queen');
-const King = require('./King');
+const Queen = require('./Queen.js');
+const King = require('./King.js');
 // Factory class to create chess pieces based on the character representation
 // of the piece. The character is expected to be in the format used in FEN (Forsyth-Edwards Notation).
 

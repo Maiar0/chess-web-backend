@@ -1,4 +1,4 @@
-const ChessBoard = require('./board/ChessBoard');
+const ChessBoard = require('../../domain/chess/board/ChessBoard');
 const { getGameDB, createGameDB, getGameFen, setGameFen } = require('../../db/dbManager');
 const { response } = require('express');
 
