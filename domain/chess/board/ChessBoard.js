@@ -135,7 +135,7 @@ class ChessBoard {
         this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
         return true;
     }
-    inCheck(color){
+    isInCheck(color){
         return false; //TODO:: Check if the king is in check
     }
     isThreatened(x, y, color){//TODO:: Make sure we account for color. 

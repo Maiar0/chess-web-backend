@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv').config();
 
 const app = express();
 
@@ -9,6 +8,8 @@ app.use(cors());
 app.use(express.json());
 
 //import routes
+const chessRoutes = require('./routes/chessRoutes.js');
+app.use('/api/chess', chessRoutes); // Use the chess routes for API calls
 
 //server setup
 const PORT = process.env.PORT || 5000;

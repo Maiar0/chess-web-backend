@@ -4,7 +4,7 @@ const { response } = require('express');
 
 class ChessGameService{
     constructor(gameId){
-        if(gameId === undefined) {
+        if(gameId === undefined || gameId === null || gameId === '') {
             this.gameId = this.createGameId();
             createGameDB(this.gameId);
         }else{
@@ -50,7 +50,7 @@ class ChessGameService{
     endTurn(){
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';
         this.saveFen(); // Save the current FEN string to the database
-        
+        return true;
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move

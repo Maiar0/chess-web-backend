@@ -14,7 +14,7 @@ class ApiResponse {
   }
 
   static successResponse(fen, gameId, activeColor, inCheck = false) {// Create normal success response
-    return new ApiResponse.success({
+    return ApiResponse.success({
         fen,
         gameId,
         activeColor,
@@ -22,3 +22,4 @@ class ApiResponse {
     });
   }
 }
+module.exports = ApiResponse; // Export the ApiResponse class for use in other modules

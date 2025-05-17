@@ -1,9 +1,9 @@
-const ApiResponse = require('./utils/ApiResponse');
-const service = require('../utils/chess/ChessGameService');
+const ApiResponse = require('../utils/ApiResponse');
+const ChessGameService = require('../services/chess/ChessGameService');
 
-exporrts.handle = (req, res) => {
+exports.handle = (req, res) => {
     const {action, gameId, payload} = req.body;
-    const svc = new service.ChessGameService(gameId);
+    const svc = new ChessGameService(gameId);
 
     try{
         let result = false;
@@ -11,7 +11,9 @@ exporrts.handle = (req, res) => {
         switch(action){
             case 'move':
                 if(svc.requestMove(from, to)){
+                    console.log('Move successful from', from, 'to', to);
                     if(svc.endTurn()){
+                        console.log('Turn ended successfully');
                         result = true;
                     }//TODO:: This needs tested apropriately
                 }
@@ -35,7 +37,7 @@ exporrts.handle = (req, res) => {
         let responseEnvelope = null; // Initialize the response envelope
         if(result){
             responseEnvelope = ApiResponse.successResponse(
-                svc.chessBoard.getFen(), // Get the FEN string from the chess board
+                svc.chessBoard.fen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
                 svc.chessBoard.isInCheck(svc.chessBoard.activeColor) // Check if the active color is in check
