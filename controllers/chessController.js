@@ -25,11 +25,17 @@ exports.handle = (req, res) => {
                     }
                 }
                 break;
-            case 'newGame'://TODO:: This needs implementaiton
-                result = true;
+            case 'newGame':
+                if(svc.newGame()){
+                    console.log('New game started');
+                    result = true;
+                }
                 break;
-            case 'info'://TODO:: This needs implementaiton
+            case 'info':
+            if(svc.newGame(gameId)){
+                console.log('Game info requested');
                 result = true;
+            }
                 break;
             default: 
                 throw new Error("Action Unknown: " + action);

@@ -21,6 +21,9 @@ class ChessGameService{
         }
         return result;
     }
+    newGame(){
+        return true;
+    }
     handleAction({action, from, to, promoteTo}){// Handle the action requested by the user
         let result = false;
         switch(action){
