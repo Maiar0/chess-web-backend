@@ -46,7 +46,8 @@ exports.handle = (req, res) => {
                 svc.chessBoard.fen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
-                svc.chessBoard.isInCheck(svc.chessBoard.activeColor) // Check if the active color is in check
+                svc.chessBoard.isInCheck(svc.chessBoard.activeColor), // Check if the active color is in check
+                svc.chessBoard.capturedPieces // Get the captured white pieces
             );
         }else{
             responseEnvelope = ApiResponse.error("Invalid Move", 400); // Return an error response if the move is invalid
