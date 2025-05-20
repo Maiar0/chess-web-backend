@@ -70,11 +70,15 @@ class ChessGameService{
         }
     }
     requestPromotion(from, to, promoteTo){// Request a promotion from the user
-        let piece = this.chessBoard.getPiece(from.x,from.y);
-        let promotionRank = 'white' === piece.color ? 7 : 0;
-        if(piece.constructor.name === 'Pawn' && to.y === promotionRank){
-            return this.chessBoard.promotePiece(from,to, promoteTo);
-        }else throw new Error("requestPromotion: Invalid promotion request"); // Invalid promotion request
+        if(this.validateMove(from, to)){// TODO:: Clean up if statement
+            let piece = this.chessBoard.getPiece(from.x,from.y);
+            let promotionRank = 'white' === piece.color ? 7 : 0;//promotion rank for pawn
+            if(piece.constructor.name === 'Pawn' && to.y === promotionRank){//Can we promote
+                this.requestMove(from,to); //lets move it to make sure we follow Move/capture logic
+                this.chessBoard.promotePiece(to, promoteTo);//Lets promote
+                return true;
+            }else throw new Error("requestPromotion: Invalid promotion request"); // Invalid promotion request
+        }
     }
     validateMove(from, to){// Validate the move requested by the user
         let piece = this.chessBoard.getPiece(from.x,from.y);
