@@ -78,6 +78,7 @@ class ChessGameService{
     }
     validateMove(from, to){// Validate the move requested by the user
         let piece = this.chessBoard.getPiece(from.x,from.y);
+        if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) {throw new Error("validateMove: Invalid piece color")}; // Check if the piece is the correct color
         if(piece === null) throw new Error("validateMove: No piece at from position"); // Check if there is a piece at the from position
         let possibleMoves = piece.getMoves(this.chessBoard);
         let result = false;

@@ -33,7 +33,7 @@ exports.handle = (req, res) => {
                 break;
             case 'info':
             if(svc.newGame(gameId)){
-                console.log('Game info requested');
+                console.log('Game info requested', gameId);
                 result = true;
             }
                 break;
