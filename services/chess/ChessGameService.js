@@ -57,10 +57,10 @@ class ChessGameService{
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
-            //Check if move is enpassante
-            if(parseInt(this.chessBoard.enPassante[0], 10) === to.x && parseInt(this.chessBoard.enPassante[1], 10) === to.y){
-                console.log('Enpassante move from', from, 'to', to);
-                return this.chessBoard.enPassanteMove(from, to);
+            //Check if move is enPassant
+            if(parseInt(this.chessBoard.enPassant[0], 10) === to.x && parseInt(this.chessBoard.enPassant[1], 10) === to.y){
+                console.log('enPassant move from', from, 'to', to);
+                return this.chessBoard.enPassantMove(from, to);
             }
             if(this.chessBoard.board[to.x][to.y] !== null){//Check if move is capture
                 console.log('Capturing piece from', from, 'to', to);

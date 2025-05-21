@@ -63,7 +63,7 @@ class ChessBoard {
         }
         fen += ' ' + this.activeColor + ' '; // Add the active color
         fen += this.castlingAvaible + ' '; // Add castling availability 
-        fen += this.enPassante !== '-' ? this.toAlgebraic(this.enPassante) : '-'; // Add en passant target square
+        fen += this.enPassant !== '-' ? this.toAlgebraic(this.enPassant) : '-'; // Add en passant target square
         fen += ' ' + this.halfmove + ' '; // Add halfmove clock
         fen += this.fullmove; // Add fullmove number
 
@@ -73,7 +73,7 @@ class ChessBoard {
         let fenFields = this.fen.split(' ');
         this.activeColor = fenFields[1];
         this.castlingAvaible = fenFields[2];
-        this.enPassante = fenFields[3].trim() !== '-' ? this.fromAlgebraic(fenFields[3]): '-';
+        this.enPassant = fenFields[3].trim() !== '-' ? this.fromAlgebraic(fenFields[3]): '-';
         this.halfmove = fenFields[4];
         this.fullmove = fenFields[5];
     }
@@ -105,7 +105,7 @@ class ChessBoard {
             this.board[from.x][from.y] = null;
             attacking.position = {x: to.x, y: to.y}; // Update the position of the piece
             captured.position = null; // Set the position of the captured piece to null
-            this.enPassante = '-'; //set enPassante to none
+            this.enPassant = '-'; //set enPassant to none
             return true; // Return true to indicate a successful capture
         } else throw new Error('capturePiece: This is not a capture?'); // Throw an error if the capture was invalid
     }
@@ -116,11 +116,11 @@ class ChessBoard {
             this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
-            this.evaluateEnPassante(movingPiece, from, to);
+            this.evaluateenPassant(movingPiece, from, to);
             return true; // Return true to indicate a successful move
         }else throw new Error('movePiece: This is a capture?');// Throw an error if the move is invalid
     }
-    enPassanteMove(from, to){
+    enPassantMove(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
         const dir = movingPiece.color === 'white' ? -1 : 1
         const captured = this.board[to.x][to.y + dir]; // Get the piece we will capture
@@ -130,14 +130,14 @@ class ChessBoard {
             this.board[to.x][to.y + dir] = null; // Move the piece to the new position
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
-            this.enPassante = '-'; //set enPassante to none
+            this.enPassant = '-'; //set enPassant to none
             return true; // Return true to indicate a successful move
         } 
     }
-    evaluateEnPassante(piece, from, to){
+    evaluateenPassant(piece, from, to){
         if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
-                this.setEnPassante(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
-        }else{ this.EnPassante = '-';}
+                this.setenPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
+        }else{ this.enPassant = '-';}
     }
     promotePiece(to, promoteTo){//promoteTo is a char
         if(promoteTo.toLowerCase() === 'king') throw new Error("promotePiece: Can't promote to King!")
@@ -154,8 +154,8 @@ class ChessBoard {
         
         return true;
     }
-    setEnPassante(x,y){
-        this.enPassante = x.toString()+y.toString(); // Set the en passant target square
+    setenPassant(x,y){
+        this.enPassant = x.toString()+y.toString(); // Set the en passant target square
     }
     isInCheck(color){
         return false; //TODO:: Check if the king is in check
@@ -245,7 +245,7 @@ class ChessBoard {
         }
         fen += ' ' + this.activeColor + ' '; // Add the active color
         fen += this.castlingAvaible + ' '; // Add castling availability 
-        fen += this.enPassante + ' '; // Add en passant target square
+        fen += this.enPassant + ' '; // Add en passant target square
         fen += ' ' + this.halfmove + ' '; // Add halfmove clock
         fen += this.fullmove; // Add fullmove number
 

@@ -12,14 +12,14 @@ class Pawn extends ChessPiece {
             { dx: 0, dy: 2, type: 'start' }, // Up 
             { dx: 1, dy: 1, type: 'capture' }, // Up Right
             { dx: -1, dy: 1, type: 'capture' }, // Up left
-            { dx: 1, dy: 1, type: 'enPassante' }, // Up Right
-            { dx: -1, dy: 1, type: 'enPassante' } // Up left
+            { dx: 1, dy: 1, type: 'enPassant' }, // Up Right
+            { dx: -1, dy: 1, type: 'enPassant' } // Up left
         ];
         const moves = []; // Array to store possible moves
         //Movement Logic
         moves.push(...this.getNormalMoves(board));
         moves.push(...this.getCaptureMoves(board));
-        moves.push(...this.getEnPassanteMoves(board));
+        moves.push(...this.getenPassantMoves(board));
         
         return moves; // Return the array of possible moves
     }
@@ -64,15 +64,15 @@ class Pawn extends ChessPiece {
     getFen() {
         return this.color === 'white' ? 'P' : 'p'; // Return the FEN representation of the piece
     }
-    getEnPassanteMoves(board){
+    getenPassantMoves(board){
         let moves = [];
         const requiredRank = this.color === 'white' ? 4 : 3; // Determine the required rank for en passant
 
-        if(board.enPassante === '-' && this.position.y !== requiredRank){  return moves;} // No en passant available
-        const ep = {x: parseInt(board.enPassante[0], 10), y: parseInt(board.enPassante[1],10)};// fill enpasante information
+        if(board.enPassant === '-' && this.position.y !== requiredRank){  return moves;} // No en passant available
+        const ep = {x: parseInt(board.enPassant[0], 10), y: parseInt(board.enPassant[1],10)};// fill enpasante information
         const dir = this.color === 'white' ? 1 : -1; // Determine the direction of movement based on color
 
-        //Check if right enpassante is available
+        //Check if right enPassant is available
         const rightTile = board.getPiece(this.position.x + 1, this.position.y); // Get the piece on the right tile
         if(
             rightTile !== null &&
@@ -84,7 +84,7 @@ class Pawn extends ChessPiece {
             moves.push({ x: ep.x, y: ep.y, capture: true }); // Add the en passant move to the array
             return moves;
         }
-        //Check if left enpassante is available
+        //Check if left enPassant is available
         const leftTile = board.getPiece(this.position.x - 1, this.position.y); // Get the piece on the left tile
         if(
             leftTile !== null &&
