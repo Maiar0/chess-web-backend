@@ -87,6 +87,7 @@ class ChessGameService{
     }
     validateMove(from, to){// Validate the move requested by the user
         let piece = this.chessBoard.getPiece(from.x,from.y);
+        if(this.chessBoard.kingInCheck && piece.constructor.name !== 'King') throw new Error('King is in check must move King');
         if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) {throw new Error("validateMove: Invalid piece color")}; // Check if the piece is the correct color
         if(piece === null) throw new Error("validateMove: No piece at from position"); // Check if there is a piece at the from position
         let possibleMoves = piece.getMoves(this.chessBoard);
@@ -98,15 +99,6 @@ class ChessGameService{
         });
         if(!result) throw new Error("validateMove: Invalid move FROM = valid, TO = invalid"); // Move is invalid
         return result; // Return the result of the validation
-    }
-    validateCheck(color){// Validate if the king is in check
-        if(this.chessBoard.activeColor !== color) this.chessBoard.generateThreatMap(color); // TODO:: This may cause an issues not able to test yet.
-        let king = this.chessBoard.getPieces(color, 'King')[0]; // Get the king of the specified color
-        let kingPosition = king.position; // Get the position of the king
-        if(this.chessBoard.isThreatened(kingPosition.x, kingPosition.y, color)){ // Check if the king is threatened
-            return true; // The king is in check
-        }
-        else false; // The king is not in check
     }
     saveFen(){
         //Save Fen back to database

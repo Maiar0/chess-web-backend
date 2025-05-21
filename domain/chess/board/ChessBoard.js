@@ -5,6 +5,7 @@ class ChessBoard {
         this.fen = fen; // FEN string representing the board state
         this.board = this.createBoard(); // Create the board based on the FEN string
         this.capturedPieces = []; // Array to store captured pieces
+        this.kingInCheck = false;
         this.moveData();
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
@@ -78,6 +79,7 @@ class ChessBoard {
         this.fullmove = fenFields[5];
     }
     generateThreatMap(color){
+        let king = null;
         for(let i = 0; i < 8; i++){
             for(let o = 0; o < 8; o++){
                 const piece = this.board[i][o]; // Get the piece at the current position
@@ -91,9 +93,17 @@ class ChessBoard {
                     const moves = piece.getCaptureMoves(this); // Get the possible moves for the piece
                     for(let move of moves){
                         this.threatMap[move.x][move.y] = true;
-                    }
+                    }//TODO:: this doesnt include enPassante?!
+                }
+                if(piece !== null && piece.constructor.name === 'King' && piece.color !== color){// must be king && activeColor
+                    console.log("Found a king: ", piece)
+                    king = piece;
                 }
             }
+        }
+        if(this.isThreatened(king.position.x, king.position.y)){
+            console.log("King flagged as in check: ", king)
+            this.kingInCheck = true;
         }
     }
     capturePiece(from, to){
@@ -157,11 +167,17 @@ class ChessBoard {
     setenPassant(x,y){
         this.enPassant = x.toString()+y.toString(); // Set the en passant target square
     }
-    isInCheck(color){
-        return false; //TODO:: Check if the king is in check
+    //returns if current moving colors king is in check. TODO:: This can swap current threatMap.
+    isInCheck(color = this.activeColor){
+        if(color === activeColor){
+            return this.kingInCheck;
+        }else{
+            this.generateThreatMap(color)
+            return this.kingInCheck;
+        }
     }
-    isThreatened(x, y, color){//TODO:: Make sure we account for color. 
-        // Check if the square at (x, y) is threatened by the opponent's pieces
+    isThreatened(x, y){//Uses current threat map!
+        console.log("isThreatened: " , this.threatMap[x][y], this.getPiece(x,y))
         if(this.threatMap[x][y] === true){
             return true; // The square is threatened
         }else{

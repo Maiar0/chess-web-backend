@@ -1,10 +1,10 @@
 const ChessGameService = require('./services/chess/ChessGameService');
 const ChessBoard = require('./domain/chess/board/ChessBoard');
 
-const service = new ChessGameService(''); // Create a new instance of ChessGameService with a test game ID
+let service = new ChessGameService('4fbz4964y'); // Create a new instance of ChessGameService with a test game ID
 const chessBoard = service.chessBoard; // Get the chess board from the service
 const printbd = () => console.log(service.chessBoard.printBoard()); // Log the game ID to the console
-testEnPassant();
+testKingMovement();
 function testCapture(){
     chessBoard.resetBoard(); // Reset the chess board to the initial state
     printbd(); // Print the initial board state
@@ -148,6 +148,71 @@ function testEnPassant() {
 
     // 6. Verify the captured pawn and final board
     console.log("Captured pieces:", chessBoard.capturedPieces);
+    printbd();
+}
+
+function testKingMovement() {//test this with UI. 
+    chessBoard.resetBoard();
+    printbd();
+
+    // 1. White plays pawn e2 to e4
+    console.log("1. ", service.handleAction({
+        action:    'move',
+        from:      { x: 4, y: 1 },
+        to:        { x: 4, y: 3 },
+        promoteTo: null
+    }));
+
+    // 2. Black plays pawn e7 to e5
+    console.log("2. ", service.handleAction({
+        action:    'move',
+        from:      { x: 4, y: 6 },
+        to:        { x: 4, y: 4 },
+        promoteTo: null
+    }));
+
+    // 3. White plays bishop f1 to c4
+    console.log("3. ", service.handleAction({
+        action:    'move',
+        from:      { x: 5, y: 0 },
+        to:        { x: 2, y: 3 },
+        promoteTo: null
+    }));
+    printbd();
+    chessBoard.generateThreatMap('black');
+    // 4. Black plays queen d8 to h4 (check)
+    console.log("4. white king in check", service.handleAction({
+        action:    'move',
+        from:      { x: 3, y: 7 },
+        to:        { x: 7, y: 3 },
+        promoteTo: null
+    }));
+    printbd();
+    chessBoard.generateThreatMap('black');
+    // 5. White attempts illegal pawn move d2 to d3 THIS WOULD PUT THE KING IN CHECK
+    console.log("5. illegal ", service.handleAction({
+        action:    'move',
+        from:      { x: 3, y: 1 },
+        to:        { x: 3, y: 2 },
+        promoteTo: null
+    }));
+    printbd();
+    // 6. black dummy
+    console.log("6.  ", service.handleAction({
+        action:    'move',
+        from:      { x: 0, y: 6 },
+        to:        { x: 0, y: 4 },
+        promoteTo: null
+    }));
+    printbd();
+    chessBoard.generateThreatMap('black');
+    // 7. White attempts illegal pawn move d3 to d4 The king should be in check therfore it must get otu of check
+    console.log("7. illegal ", service.handleAction({
+        action:    'move',
+        from:      { x: 3, y: 2 },
+        to:        { x: 3, y: 3 },
+        promoteTo: null
+    }));
     printbd();
 }
 

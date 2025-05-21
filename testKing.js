@@ -1,5 +1,5 @@
-const ChessBoard = require('./utils/chess/board/ChessBoard');
-const Pawn = require('./utils/chess/pieces/Pawn');
+const ChessBoard = require('./domain/chess/board/ChessBoard');
+const Pawn = require('./domain/chess/pieces/Pawn');
 
 let chessBoard = new ChessBoard("rnbqkbnr/pppppppp/8/4K3/8/8/PPPPPPPP/RNBQKBNR w KQkq c3 0 1");
 //console.log(chessBoard.board); // Log the board to the console
