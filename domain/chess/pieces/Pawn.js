@@ -16,15 +16,10 @@ class Pawn extends ChessPiece {
             { dx: -1, dy: 1, type: 'enPassante' } // Up left
         ];
         const moves = []; // Array to store possible moves
-        const direction = this.color === 'white' ? 1 : -1; // Determine the direction of movement based on color
-        const startRank = this.color === 'white' ? 1 : 6; // Starting rank for pawns
-
-        let evaluateX = this.position.x; // Tile that needs to be evaluated
-        let evaluateY = this.position.y + direction; // Tile that needs to be evaluated
-        const piece= () => board.getPiece(evaluateX, evaluateY); // Get the piece at the new position
         //Movement Logic
         moves.push(...this.getNormalMoves(board));
         moves.push(...this.getCaptureMoves(board));
+        moves.push(...this.getEnPassanteMoves(board));
         
         return moves; // Return the array of possible moves
     }
@@ -69,11 +64,39 @@ class Pawn extends ChessPiece {
     getFen() {
         return this.color === 'white' ? 'P' : 'p'; // Return the FEN representation of the piece
     }
-    getEnPassanteMoves(board){//TODO:: Finish this
-        moves = [];
-        if(board.enPassante !== '-'){
-            moves.push({x: parseInt(board.enPassante[0], 10), y: parseInt(board.enPassante[1], 10)})
+    getEnPassanteMoves(board){
+        let moves = [];
+        const requiredRank = this.color === 'white' ? 4 : 3; // Determine the required rank for en passant
+
+        if(board.enPassante === '-' && this.position.y !== requiredRank){  return moves;} // No en passant available
+        const ep = {x: parseInt(board.enPassante[0], 10), y: parseInt(board.enPassante[1],10)};// fill enpasante information
+        const dir = this.color === 'white' ? 1 : -1; // Determine the direction of movement based on color
+
+        //Check if right enpassante is available
+        const rightTile = board.getPiece(this.position.x + 1, this.position.y); // Get the piece on the right tile
+        if(
+            rightTile !== null &&
+            rightTile.constructor.name === 'Pawn' && 
+            rightTile.color !== this.color && 
+            ep.x  === this.position.x + 1 &&
+            ep.y  === this.position.y + dir
+        ){
+            moves.push({ x: ep.x, y: ep.y, capture: true }); // Add the en passant move to the array
+            return moves;
         }
+        //Check if left enpassante is available
+        const leftTile = board.getPiece(this.position.x - 1, this.position.y); // Get the piece on the left tile
+        if(
+            leftTile !== null &&
+            leftTile.constructor.name === 'Pawn' && 
+            leftTile.color !== this.color && 
+            ep.x  === this.position.x - 1 &&
+            ep.y  === this.position.y + dir
+        ){
+            moves.push({ x: ep.x, y: ep.y, capture: true }); // Add the en passant move to the array
+            return moves;
+        }
+        // If no en passant moves are available, return an empty array
         return moves;
     }
 }

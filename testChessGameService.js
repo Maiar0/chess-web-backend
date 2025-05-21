@@ -104,43 +104,45 @@ function testEnPassant() {
     chessBoard.resetBoard();
     printbd();
 
-    // 1. White pawn e2 (4,1) → e4 (4,3)
-    console.log("1. e2→e4:", service.handleAction({
+    // 1. White pawn a2 
+    console.log("1. ", service.handleAction({
         action:    'move',
-        from:      { x: 4, y: 1 },
-        to:        { x: 4, y: 3 },
+        from:      { x: 1, y: 1 },
+        to:        { x: 1, y: 3 },
         promoteTo: null
     }));
 
-    // 2. Black pawn h7 (7,6) → h5 (7,4)
-    console.log("2. h7→h5:", service.handleAction({
+    // 2. Black pawn dummy move
+    console.log("2. ", service.handleAction({
         action:    'move',
         from:      { x: 7, y: 6 },
         to:        { x: 7, y: 4 },
         promoteTo: null
     }));
 
-    // 3. White pawn e4 (4,3) → e5 (4,4)
-    console.log("3. e4→e5:", service.handleAction({
+    // 3. White pawn a4
+    console.log("3. ", service.handleAction({
         action:    'move',
-        from:      { x: 4, y: 3 },
-        to:        { x: 4, y: 4 },
+        from:      { x: 1, y: 3 },
+        to:        { x: 1, y: 4 },
         promoteTo: null
     }));
 
-    // 4. Black pawn d7 (3,6) → d5 (3,4), sets en passant target at d6 (3,5)
-    console.log("4. d7→d5:", service.handleAction({
+    // 4. Black pawn set up enpassant
+    console.log("4. ", service.handleAction({
         action:    'move',
-        from:      { x: 3, y: 6 },
-        to:        { x: 3, y: 4 },
+        from:      { x: 0, y: 6 },
+        to:        { x: 0, y: 4 },
         promoteTo: null
     }));
 
-    // 5. White pawn e5 (4,4) captures en passant to d6 (3,5)
-    console.log("5. e5xd6 (en passant):", service.handleAction({
+    // 5. White pawn captures en passant 
+    console.log("Piece moves: ", chessBoard.getPiece(1, 4).getMoves(chessBoard));
+    printbd();
+    console.log("5. (en passant):", service.handleAction({
         action:    'move',
-        from:      { x: 4, y: 4 },
-        to:        { x: 3, y: 5 },
+        from:      { x: 1, y: 4 },
+        to:        { x: 0, y: 5 },
         promoteTo: null
     }));
 

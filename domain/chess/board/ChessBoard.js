@@ -63,7 +63,7 @@ class ChessBoard {
         }
         fen += ' ' + this.activeColor + ' '; // Add the active color
         fen += this.castlingAvaible + ' '; // Add castling availability 
-        fen += this.enPassante !== '-' ? String.fromCharCode(this.enPassante.x + 97) + (this.enPassante.y + 1) : '-'; // Add en passant target square
+        fen += this.enPassante !== '-' ? this.toAlgebraic(this.enPassante) : '-'; // Add en passant target square
         fen += ' ' + this.halfmove + ' '; // Add halfmove clock
         fen += this.fullmove; // Add fullmove number
 
@@ -73,7 +73,7 @@ class ChessBoard {
         let fenFields = this.fen.split(' ');
         this.activeColor = fenFields[1];
         this.castlingAvaible = fenFields[2];
-        this.enPassante = fenFields[3].trim() !== '-' ? fenFields[3].split('')[0].charCodeAt(0) - 97 + fenFields[3].split('')[1] - 1 : '-';
+        this.enPassante = fenFields[3].trim() !== '-' ? this.fromAlgebraic(fenFields[3]): '-';
         this.halfmove = fenFields[4];
         this.fullmove = fenFields[5];
     }
@@ -120,14 +120,28 @@ class ChessBoard {
             return true; // Return true to indicate a successful move
         }else throw new Error('movePiece: This is a capture?');// Throw an error if the move is invalid
     }
-    promotePiece(to, promoteTo){//promoteTo is a char
-        if(promoteTo.toLowerCase() === 'king') throw new Error("promotePiece: Can't promote to King!")
-        this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
+    enPassanteMove(from, to){
+        const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
+        const dir = movingPiece.color === 'white' ? -1 : 1
+        const captured = this.board[to.x][to.y + dir]; // Get the piece we will capture
+        if(captured !== null){ 
+            this.capturedPieces.push(captured); // Add the piece to the captured pieces array
+            this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
+            this.board[to.x][to.y + dir] = null; // Move the piece to the new position
+            this.board[from.x][from.y] = null; // Set the old position to null
+            movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
+            this.enPassante = '-'; //set enPassante to none
+            return true; // Return true to indicate a successful move
+        } 
     }
     evaluateEnPassante(piece, from, to){
         if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
-                this.setEnPassante(to);
+                this.setEnPassante(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
         }else{ this.EnPassante = '-';}
+    }
+    promotePiece(to, promoteTo){//promoteTo is a char
+        if(promoteTo.toLowerCase() === 'king') throw new Error("promotePiece: Can't promote to King!")
+        this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
     }
     resetBoard(){
         this.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Reset the FEN string to the initial state
@@ -137,10 +151,11 @@ class ChessBoard {
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Reinitialize the threat map with false values
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
         this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
+        
         return true;
     }
-    setEnPassante(pos){
-        this.enPassante = this.toAlgebraic(pos);
+    setEnPassante(x,y){
+        this.enPassante = x.toString()+y.toString(); // Set the en passant target square
     }
     isInCheck(color){
         return false; //TODO:: Check if the king is in check
@@ -185,8 +200,10 @@ class ChessBoard {
         return true;
     }
     toAlgebraic(pos) {
-        const letter = String.fromCharCode(97 + pos.x);
-        const number = String(pos.y);                   
+        const x = parseInt(pos[0], 10);   //  "0" → 0
+        const y = parseInt(pos[1], 10);   //  "5" → 5
+        const letter = String.fromCharCode(97 + x);
+        const number = String(y + 1);              
         return letter + number;
     }
     fromAlgebraic(coord) {
@@ -196,7 +213,7 @@ class ChessBoard {
         const letter = coord[0].toLowerCase();
         const number = coord[1];
         const x = letter.charCodeAt(0) - 97;
-        const y = parseInt(number, 10);
+        const y = parseInt(number, 10) -1;
         if(!this.boundsCheck(x,y)) throw new Error("from Algebraic: pos not in bounds" + pos);
         return x.toString()+ y.toString();
     }
@@ -228,7 +245,7 @@ class ChessBoard {
         }
         fen += ' ' + this.activeColor + ' '; // Add the active color
         fen += this.castlingAvaible + ' '; // Add castling availability 
-        fen += this.enPassante !== '-' ? this.fromAlgebraic(this.enPassante) : '-'; // Add en passant target square
+        fen += this.enPassante + ' '; // Add en passant target square
         fen += ' ' + this.halfmove + ' '; // Add halfmove clock
         fen += this.fullmove; // Add fullmove number
 

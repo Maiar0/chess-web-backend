@@ -57,6 +57,11 @@ class ChessGameService{
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
+            //Check if move is enpassante
+            if(parseInt(this.chessBoard.enPassante[0], 10) === to.x && parseInt(this.chessBoard.enPassante[1], 10) === to.y){
+                console.log('Enpassante move from', from, 'to', to);
+                return this.chessBoard.enPassanteMove(from, to);
+            }
             if(this.chessBoard.board[to.x][to.y] !== null){//Check if move is capture
                 console.log('Capturing piece from', from, 'to', to);
                 return this.chessBoard.capturePiece(from, to);
@@ -91,7 +96,7 @@ class ChessGameService{
                 result = true; // Move is valid
             }
         });
-        if(!result) throw new Error("validateMove: Invalid move FROM is valid TO is invalid"); // Move is invalid
+        if(!result) throw new Error("validateMove: Invalid move FROM = valid, TO = invalid"); // Move is invalid
         return result; // Return the result of the validation
     }
     validateCheck(color){// Validate if the king is in check
