@@ -1,3 +1,4 @@
+const ApiError = require('../../../utils/ApiError');
 const Pawn = require('./Pawn.js');
 const Rook = require('./Rook.js');
 const Knight = require('./Knight.js');
@@ -24,7 +25,7 @@ class ChessPieceFactory{
             case 'k':
                 return new King(color);
             default:
-                throw new Error('Invalid piece type');
+                throw new ApiError('Invalid piece type', 434);
         }
     }
 }

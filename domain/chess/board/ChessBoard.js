@@ -1,4 +1,5 @@
 const ChessPieceFactory = require('../pieces/ChessPieceFactory');
+const ApiError = require('../../../utils/ApiError');
 
 class ChessBoard {
     constructor(fen) {
@@ -77,6 +78,7 @@ class ChessBoard {
         this.enPassant = fenFields[3].trim() !== '-' ? this.fromAlgebraic(fenFields[3]): '-';
         this.halfmove = fenFields[4];
         this.fullmove = fenFields[5];
+        console.log("moveData: ", this.activeColor, this.castlingAvaible, this.enPassant, this.halfmove, this.fullmove);
     }
     generateThreatMap(color){
         let king = null;
@@ -90,7 +92,7 @@ class ChessBoard {
                     }
                 }
                 if(piece !== null && piece.constructor.name === 'Pawn' && piece.color === color){ // Check if the piece is not null and belongs to the opponent
-                    const moves = piece.getCaptureMoves(this); // Get the possible moves for the piece
+                    const moves = piece.getPossibleCaptures(this); // Get the possible moves for the piece
                     for(let move of moves){
                         this.threatMap[move.x][move.y] = true;
                     }//TODO:: this doesnt include enPassante?!
@@ -105,6 +107,7 @@ class ChessBoard {
             console.log("King flagged as in check: ", king)
             this.kingInCheck = true;
         }
+        this.printThreatMap();
     }
     capturePiece(from, to){
         const attacking = this.board[from.x][from.y]; // Get the piece at the from position
@@ -117,7 +120,7 @@ class ChessBoard {
             captured.position = null; // Set the position of the captured piece to null
             this.enPassant = '-'; //set enPassant to none
             return true; // Return true to indicate a successful capture
-        } else throw new Error('capturePiece: This is not a capture?'); // Throw an error if the capture was invalid
+        } else throw new ApiError('capturePiece: This is not a capture?', 428); // Throw an error if the capture was invalid
     }
     movePiece(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
@@ -128,7 +131,7 @@ class ChessBoard {
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
             this.evaluateenPassant(movingPiece, from, to);
             return true; // Return true to indicate a successful move
-        }else throw new Error('movePiece: This is a capture?');// Throw an error if the move is invalid
+        }else throw new ApiError('movePiece: This is a capture?', 429);// Throw an error if the move is invalid
     }
     enPassantMove(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
@@ -150,7 +153,7 @@ class ChessBoard {
         }else{ this.enPassant = '-';}
     }
     promotePiece(to, promoteTo){//promoteTo is a char
-        if(promoteTo.toLowerCase() === 'king') throw new Error("promotePiece: Can't promote to King!")
+        if(promoteTo.toLowerCase() === 'king') throw new ApiError("promotePiece: Can't promote to King!",430)
         this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
     }
     resetBoard(){
@@ -177,7 +180,7 @@ class ChessBoard {
         }
     }
     isThreatened(x, y){//Uses current threat map!
-        console.log("isThreatened: " , this.threatMap[x][y], this.getPiece(x,y))
+        //console.log("isThreatened: " , this.threatMap[x][y], this.getPiece(x,y))
         if(this.threatMap[x][y] === true){
             return true; // The square is threatened
         }else{
@@ -224,14 +227,25 @@ class ChessBoard {
     }
     fromAlgebraic(coord) {
         if (typeof coord !== 'string' || coord.length !== 2) {
-            throw new Error(`Invalid input "${coord}"`);
+            throw new ApiError(`Invalid input "${coord}"`, 431);
         }
         const letter = coord[0].toLowerCase();
         const number = coord[1];
         const x = letter.charCodeAt(0) - 97;
         const y = parseInt(number, 10) -1;
-        if(!this.boundsCheck(x,y)) throw new Error("from Algebraic: pos not in bounds" + pos);
+        if(!this.boundsCheck(x,y)) throw new ApiError("from Algebraic: pos not in bounds" + pos, 432);
         return x.toString()+ y.toString();
+    }
+    printThreatMap() {
+    console.log("Threat Map:", this.activeColor);
+    console.log("   a b c d e f g h");
+        for (let y = 7; y >= 0; y--) {
+            let row = (y + 1) + "  ";
+            for (let x = 0; x < 8; x++) {
+                row += this.threatMap[x][y] ? "X " : ". ";
+            }
+            console.log(row);
+        }
     }
     printBoard(){
         let fenArray = [];

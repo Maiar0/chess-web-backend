@@ -1,5 +1,6 @@
 const ApiResponse = require('../utils/ApiResponse');
 const ChessGameService = require('../services/chess/ChessGameService');
+const ApiError = require('../utils/ApiError');
 
 exports.handle = (req, res) => {
     const {action, gameId, payload} = req.body;
@@ -38,7 +39,7 @@ exports.handle = (req, res) => {
             }
                 break;
             default: 
-                throw new Error("Action Unknown: " + action);
+                throw new ApiError("Action Unknown: " + action);
         }
         let responseEnvelope = null; // Initialize the response envelope
         if(result){
@@ -46,17 +47,15 @@ exports.handle = (req, res) => {
                 svc.chessBoard.fen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
-                svc.chessBoard.isInCheck(svc.chessBoard.activeColor), // Check if the active color is in check
+                svc.chessBoard.kingInCheck, // Check if the active color is in check
                 svc.chessBoard.capturedPieces // Get the captured white pieces
             );
         }else{
-            responseEnvelope = ApiResponse.error("Invalid Move", 400); // Return an error response if the move is invalid
+            responseEnvelope = ApiResponse.error("Invalid Move", err.status); // Return an error response if the move is invalid
         }
         return res.json(responseEnvelope); // Return the response envelope as JSON
-    }catch(err){
-        return res
-            .status(500)
-            .json(ApiResponse.error(err.message, 500)); // Return an error response with the error message and status code
-
-    }
+    }catch (err) {
+        const status = err.status || 500;
+        res.status(status).json(ApiResponse.error(err.message, status));
+  }
 }

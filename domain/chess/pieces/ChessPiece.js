@@ -1,3 +1,5 @@
+const ApiError = require('../../../utils/ApiError');
+
 class ChessPiece{
     constructor(color, position) {
         this.color = color; // 'white' or 'black'
@@ -23,17 +25,17 @@ class ChessPiece{
         // Creates a list of possible moves for the piece
         // Board is an object representing the current state of the chessboard
         // This method should be overridden by subclasses
-        throw new Error('getMoves() must be implemented in subclasses');
+        throw new ApiError('getMoves() must be implemented in subclasses', 432);
     }
     getPieceType() {
         // Return the type of the piece (e.g., 'pawn', 'rook', etc.)
         // This method should be overridden by subclasses
-        throw new Error('getPieceType() must be implemented in subclasses');
+        throw new ApiError('getPieceType() must be implemented in subclasses', 433);
     }
     getFen() {
         // Return the FEN representation of the piece
         // This method should be overridden by subclasses
-        throw new Error('getFen() must be implemented in subclasses');
+        throw new ApiError('getFen() must be implemented in subclasses', 434);
     }
 }
 module.exports = ChessPiece; // Export the ChessPiece class

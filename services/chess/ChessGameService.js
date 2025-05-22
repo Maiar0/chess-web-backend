@@ -1,6 +1,7 @@
 const ChessBoard = require('../../domain/chess/board/ChessBoard');
 const { getGameDB, createGameDB, getGameFen, setGameFen } = require('../../db/dbManager');
 const { response } = require('express');
+const ApiError = require('../../utils/ApiError');
 
 class ChessGameService{
     constructor(gameId){
@@ -82,14 +83,18 @@ class ChessGameService{
                 this.requestMove(from,to); //lets move it to make sure we follow Move/capture logic
                 this.chessBoard.promotePiece(to, promoteTo);//Lets promote
                 return true;
-            }else throw new Error("requestPromotion: Invalid promotion request"); // Invalid promotion request
+            }else throw new ApiError("requestPromotion: Invalid promotion request", 435); // Invalid promotion request
         }
     }
-    validateMove(from, to){// Validate the move requested by the user
+    validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
         let piece = this.chessBoard.getPiece(from.x,from.y);
-        if(this.chessBoard.kingInCheck && piece.constructor.name !== 'King') throw new Error('King is in check must move King');
-        if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) {throw new Error("validateMove: Invalid piece color")}; // Check if the piece is the correct color
-        if(piece === null) throw new Error("validateMove: No piece at from position"); // Check if there is a piece at the from position
+        //what if the move would get the king out of check?
+        const kingInCheck = this.chessBoard.kingInCheck
+        if(!kingInCheck && this.simulateMoveCheck(from,to)) throw new ApiError('Move would put king into Check.', 423);
+        if(kingInCheck && piece.constructor.name !== 'King' && this.simulateMoveCheck(from, to)) throw new ApiError('Can only move to remove King in check.', 425)
+        if(piece.constructor.name === 'King' && this.chessBoard.isThreatened(to.x, to.y)) throw new ApiError('Cannot move King into check', 424);
+        if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) {throw new ApiError("validateMove: Invalid piece color", 436)}; // Check if the piece is the correct color
+        if(piece === null) throw new ApiError("validateMove: No piece at from position", 437); // Check if there is a piece at the from position
         let possibleMoves = piece.getMoves(this.chessBoard);
         let result = false;
         possibleMoves.forEach(element => {
@@ -97,8 +102,19 @@ class ChessGameService{
                 result = true; // Move is valid
             }
         });
-        if(!result) throw new Error("validateMove: Invalid move FROM = valid, TO = invalid"); // Move is invalid
+        if(!result) throw new ApiError("validateMove: Invalid move FROM = valid, TO = invalid", 437); // Move is invalid
         return result; // Return the result of the validation
+    }
+    //set up fake scenario to see if non king piece move and return check status
+    simulateMoveCheck(from, to){
+        const dummyBoard = new ChessBoard(this.officialFen);//fen
+        let piece = dummyBoard.getPiece(from.x,from.y);//get piece at from
+        dummyBoard.board[to.x][to.y] = piece;//move piece
+        piece.position = {x: to.x, y: to.y};
+        dummyBoard.board[from.x][from.y] = null;//clear last space
+        dummyBoard.generateThreatMap(piece.color === 'white' ? 'black': 'white');//generate map
+        console.log("moveResolvesCheck" , dummyBoard.kingInCheck)
+        return dummyBoard.kingInCheck;//return if king is in check?
     }
     saveFen(){
         //Save Fen back to database

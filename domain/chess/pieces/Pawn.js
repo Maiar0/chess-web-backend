@@ -61,6 +61,26 @@ class Pawn extends ChessPiece {
         }
         return moves;
     }
+    getPossibleCaptures(board) {// this is possible Captures for our threat Map
+        const moves = []; // Array to store possible moves
+        const direction = this.color === 'white' ? 1 : -1; // Determine the direction of movement based on color
+
+        let evaluateX = this.position.x; // Tile that needs to be evaluated
+        let evaluateY = this.position.y + direction; // Tile that needs to be evaluated
+        const piece= () => board.getPiece(evaluateX, evaluateY); // Get the piece at the new position
+        // Capture Logic
+        evaluateX = this.position.x + 1; // Evaluate the Right diagonal square   
+        evaluateY = this.position.y + direction; // Evaluate the forward square
+        if(board.boundsCheck(evaluateX, evaluateY)){
+            moves.push({ x: evaluateX, y: evaluateY, capture: true }); // Capture diagonally to the right
+        }
+        evaluateX = this.position.x - 1; // Evaluate the Left diagonal square
+        if(board.boundsCheck(evaluateX, evaluateY)){
+            moves.push({ x: evaluateX, y: evaluateY, capture: true }); // Capture diagonally to the left
+        }
+
+        return moves;
+    }
     getFen() {
         return this.color === 'white' ? 'P' : 'p'; // Return the FEN representation of the piece
     }
