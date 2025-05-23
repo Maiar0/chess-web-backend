@@ -88,13 +88,19 @@ class ChessGameService{
     }
     validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
         let piece = this.chessBoard.getPiece(from.x,from.y);
-        //what if the move would get the king out of check?
         const kingInCheck = this.chessBoard.kingInCheck
-        if(!kingInCheck && this.simulateMoveCheck(from,to)) throw new ApiError('Move would put king into Check.', 423);
-        if(kingInCheck && piece.constructor.name !== 'King' && this.simulateMoveCheck(from, to)) throw new ApiError('Can only move to remove King in check.', 425)
-        if(piece.constructor.name === 'King' && this.chessBoard.isThreatened(to.x, to.y)) throw new ApiError('Cannot move King into check', 424);
-        if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) {throw new ApiError("validateMove: Invalid piece color", 436)}; // Check if the piece is the correct color
-        if(piece === null) throw new ApiError("validateMove: No piece at from position", 437); // Check if there is a piece at the from position
+        console.log("King Status REAL: ", kingInCheck)
+        this.chessBoard.printThreatMap();
+        if(piece === null) // Check if there is a piece at the from position
+            {throw new ApiError("validateMove: No piece at from position", 437);}; 
+
+        if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) // Check if the piece is the correct color
+            {throw new ApiError("validateMove: Invalid piece color", 436);}; 
+
+        if(this.simulateMoveCheck(from, to)){
+            throw new ApiError('King is in Check.', 423);
+        }
+        
         let possibleMoves = piece.getMoves(this.chessBoard);
         let result = false;
         possibleMoves.forEach(element => {
@@ -107,13 +113,17 @@ class ChessGameService{
     }
     //set up fake scenario to see if non king piece move and return check status
     simulateMoveCheck(from, to){
+        console.log('START SIMULATION----------------------');
         const dummyBoard = new ChessBoard(this.officialFen);//fen
         let piece = dummyBoard.getPiece(from.x,from.y);//get piece at from
         dummyBoard.board[to.x][to.y] = piece;//move piece
         piece.position = {x: to.x, y: to.y};
         dummyBoard.board[from.x][from.y] = null;//clear last space
-        dummyBoard.generateThreatMap(piece.color === 'white' ? 'black': 'white');//generate map
-        console.log("moveResolvesCheck" , dummyBoard.kingInCheck)
+        dummyBoard.generateThreatMap(dummyBoard.activeColor === 'w' ? 'black': 'white');//generate map
+        dummyBoard.printThreatMap();
+        dummyBoard.printBoard();
+        console.log("simulateMoveCheck" , dummyBoard.kingInCheck)
+        console.log("STOP SIMULATION-----------------------")
         return dummyBoard.kingInCheck;//return if king is in check?
     }
     saveFen(){

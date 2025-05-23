@@ -78,9 +78,9 @@ class ChessBoard {
         this.enPassant = fenFields[3].trim() !== '-' ? this.fromAlgebraic(fenFields[3]): '-';
         this.halfmove = fenFields[4];
         this.fullmove = fenFields[5];
-        console.log("moveData: ", this.activeColor, this.castlingAvaible, this.enPassant, this.halfmove, this.fullmove);
     }
     generateThreatMap(color){
+        this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false));
         let king = null;
         for(let i = 0; i < 8; i++){
             for(let o = 0; o < 8; o++){
@@ -92,10 +92,10 @@ class ChessBoard {
                     }
                 }
                 if(piece !== null && piece.constructor.name === 'Pawn' && piece.color === color){ // Check if the piece is not null and belongs to the opponent
-                    const moves = piece.getPossibleCaptures(this); // Get the possible moves for the piece
+                    const moves = piece.getPossibleCaptures(this); // Get the possible moves for the piece//TODO:: we didnt actually need to create new function for this.
                     for(let move of moves){
                         this.threatMap[move.x][move.y] = true;
-                    }//TODO:: this doesnt include enPassante?!
+                    }
                 }
                 if(piece !== null && piece.constructor.name === 'King' && piece.color !== color){// must be king && activeColor
                     console.log("Found a king: ", piece)
@@ -106,8 +106,10 @@ class ChessBoard {
         if(this.isThreatened(king.position.x, king.position.y)){
             console.log("King flagged as in check: ", king)
             this.kingInCheck = true;
+        }else{
+            this.kingInCheck = false;
+
         }
-        this.printThreatMap();
     }
     capturePiece(from, to){
         const attacking = this.board[from.x][from.y]; // Get the piece at the from position
@@ -169,15 +171,6 @@ class ChessBoard {
     }
     setenPassant(x,y){
         this.enPassant = x.toString()+y.toString(); // Set the en passant target square
-    }
-    //returns if current moving colors king is in check. TODO:: This can swap current threatMap.
-    isInCheck(color = this.activeColor){
-        if(color === activeColor){
-            return this.kingInCheck;
-        }else{
-            this.generateThreatMap(color)
-            return this.kingInCheck;
-        }
     }
     isThreatened(x, y){//Uses current threat map!
         //console.log("isThreatened: " , this.threatMap[x][y], this.getPiece(x,y))
@@ -247,39 +240,20 @@ class ChessBoard {
             console.log(row);
         }
     }
-    printBoard(){
-        let fenArray = [];
-        for(let i = 0; i < 8; i++){
-            fenArray[i] = '';
-            let count = 0; // Counter for empty squares
-            for(let o = 0; o < 8; o++){
-                const piece = this.board[o][i]; // Get the piece at the current position
-                if (piece === null){
-                    count++;
-                }else{
-                    if(count > 0){
-                        fenArray[i] += count; // Add the number of empty squares to the FEN string
-                        count = 0; // Reset the counter
-                    }
-                    fenArray[i] += piece.getFen(); // Get the FEN representation of the piece
-                }
+    printBoard() {
+    console.log("Board:");
+    console.log("   a b c d e f g h");
+        for (let y = 7; y >= 0; y--) {
+            let row = (y + 1) + "  ";
+            for (let x = 0; x < 8; x++) {
+                const b = this.board[x][y];
+                const p = this.getPiece(x,y);
+                row += p ? p.getFen()+' ' : ". ";
             }
-            if(count > 0){
-                fenArray[i] += count; // Add the number of empty squares to the FEN string
-                count = 0; // Reset the counter
-            }
+            console.log(row);
         }
-        let fen = '';
-        for(let i = fenArray.length - 1; i >= 0; i--){
-            console.log(fenArray[i]); // Log the FEN string for each row
-        }
-        fen += ' ' + this.activeColor + ' '; // Add the active color
-        fen += this.castlingAvaible + ' '; // Add castling availability 
-        fen += this.enPassant + ' '; // Add en passant target square
-        fen += ' ' + this.halfmove + ' '; // Add halfmove clock
-        fen += this.fullmove; // Add fullmove number
-
-        return fen; // Return the FEN string representation of the board
+        console.log("activeColor: ", this.activeColor, "-Castling: ", this.castlingAvaible, "-En Passant: ", this.enPassant, "-Half move: ", this.halfmove, "-Full move: ", this.fullmove);
     }
+    
 }
 module.exports = ChessBoard; // Export the ChessBoard class

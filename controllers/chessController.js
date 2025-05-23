@@ -14,7 +14,7 @@ exports.handle = (req, res) => {
                 if(svc.requestMove(from, to)){
                     console.log('Move successful from', from, 'to', to);
                     if(svc.endTurn()){
-                        console.log('Turn ended successfully');
+                        console.log('Turn ended successfully-----------------');
                         result = true;
                     }//TODO:: This needs tested apropriately
                 }
@@ -28,13 +28,13 @@ exports.handle = (req, res) => {
                 break;
             case 'newGame':
                 if(svc.newGame()){
-                    console.log('New game started');
+                    console.log('New game started---------------');
                     result = true;
                 }
                 break;
             case 'info':
             if(svc.newGame(gameId)){
-                console.log('Game info requested', gameId);
+                console.log('Game info requested', gameId,'---------------------');
                 result = true;
             }
                 break;

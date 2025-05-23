@@ -31,7 +31,6 @@ class King extends ChessPiece {
                 }
             }
         }
-        console.log('King moves:', moves); // Log the possible moves for debugging
         return moves; // Return an empty array for now, as the move logic is not implemented
     }
     getFen() {
