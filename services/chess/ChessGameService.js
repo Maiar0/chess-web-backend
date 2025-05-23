@@ -1,5 +1,5 @@
 const ChessBoard = require('../../domain/chess/board/ChessBoard');
-const { getGameDB, createGameDB, getGameFen, setGameFen } = require('../../db/dbManager');
+const { getGameDB, createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures } = require('../../db/dbManager');
 const { response } = require('express');
 const ApiError = require('../../utils/ApiError');
 
@@ -11,8 +11,10 @@ class ChessGameService{
         }else{
             this.gameId = gameId;
         }
+        this.capturedString = getGameCaptures(gameId);
+        console.log("Coming from Database:",this.capturedString)
         this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
-        this.chessBoard = new ChessBoard(this.officialFen); // Create a new chess board using the FEN string
+        this.chessBoard = new ChessBoard(this.officialFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
     }
     createGameId(){// Generate a random game ID
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -25,7 +27,7 @@ class ChessGameService{
     newGame(){
         return true;
     }
-    handleAction({action, from, to, promoteTo}){// Handle the action requested by the user
+    handleAction({action, from, to, promoteTo}){// Handle the action requested by the user //TODO:: This needs removed
         let result = false;
         switch(action){
             case 'move':
@@ -50,11 +52,25 @@ class ChessGameService{
             console.log("Failed to:", action);
             return false;
         }
-    }//TODO:: This needs removed
+    }
     endTurn(){
-        this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';
+        //Full move counter
+        if(this.chessBoard.activeColor === 'b') this.chessBoard.fullmove =  (parseInt(this.chessBoard.fullmove,10) + 1).toString();
+        this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
+        this.capturedString = this.parseCapturedPiece(this.chessBoard.capturedPieces);
+        console.log(this.capturedString);
         this.saveFen(); // Save the current FEN string to the database
         return true;
+    }
+    parseCapturedPiece(captured){
+        if(captured.length > 0){
+            let s = '';
+            for(let i = 0; i< captured.length; ++i){
+                s += captured[i].getFen();
+            }
+            return s;
+        }
+        return '';
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
@@ -68,7 +84,8 @@ class ChessGameService{
                 console.log('enPassant move from', from, 'to', to);
                 return this.chessBoard.enPassantMove(from, to);
             }
-            if(this.chessBoard.board[to.x][to.y] !== null){//Check if move is capture
+            //Check if move is capture
+            if(this.chessBoard.board[to.x][to.y] !== null){
                 console.log('Capturing piece from', from, 'to', to);
                 return this.chessBoard.capturePiece(from, to);
             }else{// Not a capture
@@ -76,7 +93,7 @@ class ChessGameService{
                 return this.chessBoard.movePiece(from, to);
             }
         }else{
-            console.log('Invalid move from', from, 'to', to, 'THIS SHOULD NOT PRINT');
+            console.log('Invalid move from', from, 'to', to, '*************THIS SHOULD NOT PRINT*************');
             return false; // Move is invalid
         }
     }
@@ -110,23 +127,23 @@ class ChessGameService{
     }
     //set up fake scenario to see if non king piece move and return check status
     simulateMoveCheck(from, to){
-        console.log('START SIMULATION----------------------');
+        console.log('*************START SIMULATION*************');
         const dummyBoard = new ChessBoard(this.officialFen);//fen
         let piece = dummyBoard.getPiece(from.x,from.y);//get piece at from
         dummyBoard.board[to.x][to.y] = piece;//move piece
         piece.position = {x: to.x, y: to.y};
         dummyBoard.board[from.x][from.y] = null;//clear last space
         dummyBoard.generateThreatMap(dummyBoard.activeColor === 'w' ? 'black': 'white');//generate map
-        dummyBoard.printThreatMap();
-        dummyBoard.printBoard();
-        console.log("simulateMoveCheck" , dummyBoard.kingInCheck)
-        console.log("STOP SIMULATION-----------------------")
+        console.log("*************STOP SIMULATION*************")
         return dummyBoard.kingInCheck;//return if king is in check?
     }
     saveFen(){
         //Save Fen back to database
+        let result = false;
         this.chessBoard.fen = this.chessBoard.createFen(); // TODO:: This is dumb
-        return setGameFen(this.gameId, this.chessBoard.fen); // Save the current FEN string to the database
+        if(setGameFen(this.gameId, this.chessBoard.fen)){result = true;}else{result =false;}
+        if(setGameCaptures(this.gameId, this.capturedString)){result = true;}else{result = false;}
+        return ; // Save the current FEN string to the database
     }
 }
 module.exports = ChessGameService;

@@ -14,9 +14,9 @@ exports.handle = (req, res) => {
                 if(svc.requestMove(from, to)){
                     console.log('Move successful from', from, 'to', to);
                     if(svc.endTurn()){
-                        console.log('Turn ended successfully-----------------');
+                        console.log('-----------------Turn ended successfully-----------------');
                         result = true;
-                    }//TODO:: This needs tested apropriately
+                    }
                 }
                 break;
             case 'promote':
@@ -28,27 +28,27 @@ exports.handle = (req, res) => {
                 break;
             case 'newGame':
                 if(svc.newGame()){
-                    console.log('New game started---------------');
+                    console.log('-----------------New game started---------------');
                     result = true;
                 }
                 break;
             case 'info':
             if(svc.newGame(gameId)){
-                console.log('Game info requested', gameId,'---------------------');
+                console.log('-----------------Game info requested', gameId,'---------------------');
                 result = true;
             }
                 break;
             default: 
-                throw new ApiError("Action Unknown: " + action);
+                throw new ApiError("Action Unknown: " + action,520);
         }
         let responseEnvelope = null; // Initialize the response envelope
         if(result){
-            responseEnvelope = ApiResponse.successResponse(
+            responseEnvelope = ApiResponse.successResponse(//TODO:: we should grab data from database
                 svc.chessBoard.fen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
                 svc.chessBoard.kingInCheck, // Check if the active color is in check
-                svc.chessBoard.capturedPieces // Get the captured white pieces
+                svc.capturedString// Get the captured pieces
             );
         }else{
             responseEnvelope = ApiResponse.error("Invalid Move", err.status); // Return an error response if the move is invalid

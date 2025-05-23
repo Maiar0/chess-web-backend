@@ -16,14 +16,15 @@ function createGameDB(gameId){
     const db = new Database(dbPath);//Create a new database or open an existing one
     db.exec(`
         CREATE TABLE IF NOT EXISTS game_state ( 
-        id  INTEGER  PRIMARY KEY,
-        fen TEXT    NOT NULL
+        id          INTEGER     PRIMARY KEY,
+        fen         TEXT        NOT NULL,
+        captures    TEXT        DEFAULT ''
         );
     `);
     // Create the game_state table if it doesn't exist
     db.prepare(`
-        INSERT OR REPLACE INTO game_state (id, fen)
-        VALUES (1,?);
+        INSERT OR REPLACE INTO game_state (id, fen, captures)
+        VALUES (1,?,'');
     `).run(intialFen);// Insert initial FEN string into the game_state table
     
     db.close();
@@ -68,10 +69,43 @@ function setGameFen(gameId, fen) {
     return info.changes;
 }
 
+function setGameCaptures(gameId, captures) {
+    const db = getGameDB(gameId);
+    if (!db) return null;
+
+    const stmt = db.prepare('UPDATE game_state SET captures = ? WHERE id = ?');
+    const info = stmt.run(captures, 1);
+
+    db.close();
+
+    if (info.changes === 0) {
+        throw new ApiError('No rows updated. Check if the game ID is correct.', 428);
+    }
+    return info.changes;
+}
+function getGameCaptures(gameId) {
+    const db = getGameDB(gameId);
+    if (!db) return null;
+
+    const stmt = db.prepare('SELECT captures FROM game_state WHERE id = ?');
+    const row = stmt.get(1);
+    
+    db.close();
+    if (!row) {
+        throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 429);
+    }
+
+    return row.captures;
+}
+
+
+
 module.exports = {
     createGameDB,
     getGameDB,
     deleteGameDB,
     getGameFen,
-    setGameFen
+    setGameFen,
+    setGameCaptures,
+    getGameCaptures
 };

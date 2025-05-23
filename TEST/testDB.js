@@ -1,7 +1,7 @@
 const fs       = require('fs');
 const path     = require('path');
 const Database = require('better-sqlite3');
-const { createGameDB, deleteGameDB, getGameDB } = require('./db/dbManager');
+const { createGameDB, deleteGameDB, getGameDB } = require('../db/dbManager');
 
 // 1. Test DB Creation
 const gameId = 'vsCodeTest';

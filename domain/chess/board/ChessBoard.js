@@ -2,12 +2,20 @@ const ChessPieceFactory = require('../pieces/ChessPieceFactory');
 const ApiError = require('../../../utils/ApiError');
 
 class ChessBoard {
-    constructor(fen) {
+    constructor(fen, extras = {}) {
         this.fen = fen; // FEN string representing the board state
         this.board = this.createBoard(); // Create the board based on the FEN string
         this.capturedPieces = []; // Array to store captured pieces
+        if(typeof extras.captures === 'string' && extras.captures !== undefined && extras.captures.length > 0){//build captured array
+            
+            for(let i = 0; i < extras.captures.length; ++i){
+                const piece = ChessPieceFactory.createPiece(extras.captures[i]);
+                console.log("char:", extras.captures[i],"piece:", piece)
+                this.capturedPieces.push(ChessPieceFactory.createPiece(extras.captures[i]));
+            }
+        }
         this.kingInCheck = false;
-        this.moveData();
+        this.fenData();
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
         this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
@@ -71,7 +79,7 @@ class ChessBoard {
 
         return fen; // Return the FEN string representation of the board
     }
-    moveData(){
+    fenData(){
         let fenFields = this.fen.split(' ');
         this.activeColor = fenFields[1];
         this.castlingAvaible = fenFields[2];
@@ -98,13 +106,11 @@ class ChessBoard {
                     }
                 }
                 if(piece !== null && piece.constructor.name === 'King' && piece.color !== color){// must be king && activeColor
-                    console.log("Found a king: ", piece)
                     king = piece;
                 }
             }
         }
         if(this.isThreatened(king.position.x, king.position.y)){
-            console.log("King flagged as in check: ", king)
             this.kingInCheck = true;
         }else{
             this.kingInCheck = false;
@@ -121,6 +127,7 @@ class ChessBoard {
             attacking.position = {x: to.x, y: to.y}; // Update the position of the piece
             captured.position = null; // Set the position of the captured piece to null
             this.enPassant = '-'; //set enPassant to none
+            this.halfmove = '0';
             return true; // Return true to indicate a successful capture
         } else throw new ApiError('capturePiece: This is not a capture?', 428); // Throw an error if the capture was invalid
     }
@@ -132,6 +139,11 @@ class ChessBoard {
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
             this.evaluateEnPassant(movingPiece, from, to);
+            if(movingPiece.constructor.name === 'Pawn') {
+                this.halfmove = '0';
+            }else{
+                this.halfmove = (parseInt(this.halfmove,10) + 1).toString()
+            }
             return true; // Return true to indicate a successful move
         }else throw new ApiError('movePiece: This is a capture?', 429);// Throw an error if the move is invalid
     }
@@ -163,7 +175,7 @@ class ChessBoard {
         this.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Reset the FEN string to the initial state
         this.board = this.createBoard(); // Reset the board to its initial state
         this.capturedPieces = []; // Clear the captured pieces array
-        this.moveData(); // Reset the move data
+        this.fenData(); // Reset the move data
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Reinitialize the threat map with false values
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
         this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
@@ -212,14 +224,14 @@ class ChessBoard {
         }
         return true;
     }
-    toAlgebraic(pos) {
+    toAlgebraic(pos) {//convert to readable format
         const x = parseInt(pos[0], 10);   //  "0" → 0
         const y = parseInt(pos[1], 10);   //  "5" → 5
         const letter = String.fromCharCode(97 + x);
         const number = String(y + 1);              
         return letter + number;
     }
-    fromAlgebraic(coord) {
+    fromAlgebraic(coord) {//convert to useable format
         if (typeof coord !== 'string' || coord.length !== 2) {
             throw new ApiError(`Invalid input "${coord}"`, 431);
         }
@@ -253,7 +265,7 @@ class ChessBoard {
             }
             console.log(row);
         }
-        console.log("activeColor: ", this.activeColor, "-Castling: ", this.castlingAvaible, "-En Passant: ", this.enPassant, "-Half move: ", this.halfmove, "-Full move: ", this.fullmove);
+        console.log("(activeColor:", this.activeColor, ") (Castling:", this.castlingAvaible, ") (En Passant:", this.enPassant, ") (Half move:", this.halfmove, ") (Full move:", this.fullmove,")");
     }
     
 }

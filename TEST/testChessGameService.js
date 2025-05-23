@@ -1,5 +1,5 @@
-const ChessGameService = require('./services/chess/ChessGameService');
-const ChessBoard = require('./domain/chess/board/ChessBoard');
+const ChessGameService = require('../services/chess/ChessGameService');
+const ChessBoard = require('../domain/chess/board/ChessBoard');
 
 let service = new ChessGameService('4fbz4964y'); // Create a new instance of ChessGameService with a test game ID
 const chessBoard = service.chessBoard; // Get the chess board from the service

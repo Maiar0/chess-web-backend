@@ -1,5 +1,5 @@
-const ChessBoard = require('./domain/chess/board/ChessBoard');
-const Pawn = require('./domain/chess/pieces/Pawn');
+const ChessBoard = require('../domain/chess/board/ChessBoard');
+const Pawn = require('../domain/chess/pieces/Pawn');
 const enPassantFen = "rnbqkbnr/pppppppp/8/pP6/8/8/PPPPPPPP/RNBQKBNR w KQkq a5 0 1";
 let chessBoard = new ChessBoard(enPassantFen);
 const printbd = () => console.log(chessBoard.printBoard()); // Log the game ID to the console
