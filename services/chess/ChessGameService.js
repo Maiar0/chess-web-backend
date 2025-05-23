@@ -58,6 +58,11 @@ class ChessGameService{
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
+            const piece = this.chessBoard.getPiece(from.x, from.y);
+            //TODO:: This logic will need to be on front end, Pawn promotion
+            if(piece.constructor.name === 'Pawn' && to.y === (piece.color === 'white' ? 7 : 0)){
+                return this.requestPromotion(from, to, piece.color === 'white' ? 'Q' : 'q');
+            }
             //Check if move is enPassant
             if(parseInt(this.chessBoard.enPassant[0], 10) === to.x && parseInt(this.chessBoard.enPassant[1], 10) === to.y){
                 console.log('enPassant move from', from, 'to', to);
@@ -76,21 +81,13 @@ class ChessGameService{
         }
     }
     requestPromotion(from, to, promoteTo){// Request a promotion from the user
-        if(this.validateMove(from, to)){// TODO:: Clean up if statement
-            let piece = this.chessBoard.getPiece(from.x,from.y);
-            let promotionRank = 'white' === piece.color ? 7 : 0;//promotion rank for pawn
-            if(piece.constructor.name === 'Pawn' && to.y === promotionRank){//Can we promote
-                this.requestMove(from,to); //lets move it to make sure we follow Move/capture logic
-                this.chessBoard.promotePiece(to, promoteTo);//Lets promote
-                return true;
-            }else throw new ApiError("requestPromotion: Invalid promotion request", 435); // Invalid promotion request
-        }
+        this.chessBoard.promotePiece(from, to, promoteTo);//Lets promote
+        return true;
     }
+            
     validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
         let piece = this.chessBoard.getPiece(from.x,from.y);
-        const kingInCheck = this.chessBoard.kingInCheck
-        console.log("King Status REAL: ", kingInCheck)
-        this.chessBoard.printThreatMap();
+        
         if(piece === null) // Check if there is a piece at the from position
             {throw new ApiError("validateMove: No piece at from position", 437);}; 
 

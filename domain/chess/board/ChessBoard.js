@@ -131,7 +131,7 @@ class ChessBoard {
             this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
-            this.evaluateenPassant(movingPiece, from, to);
+            this.evaluateEnPassant(movingPiece, from, to);
             return true; // Return true to indicate a successful move
         }else throw new ApiError('movePiece: This is a capture?', 429);// Throw an error if the move is invalid
     }
@@ -149,13 +149,14 @@ class ChessBoard {
             return true; // Return true to indicate a successful move
         } 
     }
-    evaluateenPassant(piece, from, to){
+    evaluateEnPassant(piece, from, to){
         if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
                 this.setenPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
         }else{ this.enPassant = '-';}
     }
-    promotePiece(to, promoteTo){//promoteTo is a char
-        if(promoteTo.toLowerCase() === 'king') throw new ApiError("promotePiece: Can't promote to King!",430)
+    promotePiece(from, to, promoteTo){//promoteTo is a char
+        this.movePiece(from, to);
+        if(promoteTo.toLowerCase() === 'k') throw new ApiError("promotePiece: Can't promote to King!",430)
         this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
     }
     resetBoard(){
