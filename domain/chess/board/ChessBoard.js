@@ -10,7 +10,6 @@ class ChessBoard {
             
             for(let i = 0; i < extras.captures.length; ++i){
                 const piece = ChessPieceFactory.createPiece(extras.captures[i]);
-                console.log("char:", extras.captures[i],"piece:", piece)
                 this.capturedPieces.push(ChessPieceFactory.createPiece(extras.captures[i]));
             }
         }
@@ -167,7 +166,9 @@ class ChessBoard {
         }else{ this.enPassant = '-';}
     }
     promotePiece(from, to, promoteTo){//promoteTo is a char
-        this.movePiece(from, to);
+        if(this.getPiece(to.x, to.y) !== null){
+            this.capturePiece(from,to);
+        }else{this.movePiece(from, to);}
         if(promoteTo.toLowerCase() === 'k') throw new ApiError("promotePiece: Can't promote to King!",430)
         this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
     }
