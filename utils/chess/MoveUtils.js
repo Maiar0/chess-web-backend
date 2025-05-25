@@ -26,8 +26,6 @@ class MoveUtils{
             for(let o = 0; o < moves.length; ++o){
                 const to = moves[o];
                 const from = piece.position;
-
-                console.log('SimulateKingCheckMate', to , from);
                 if(!this.simulationKingCheck(fen, from, to)){
                     return false;//We have a move
                 }

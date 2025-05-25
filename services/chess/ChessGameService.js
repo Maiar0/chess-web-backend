@@ -88,6 +88,7 @@ class ChessGameService{
         this.capturedString = FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces);
         this.saveFen(); // Save the current FEN string to the database
         if(MoveUtils.simulationKingCheckMate(this.officialFen)){
+            console.log("CheckMate")
             this.CheckMate = true;
         }
         return true;
@@ -95,7 +96,7 @@ class ChessGameService{
     saveFen(){
         //Save Fen back to database
         let result = false;
-        this.officialFen = this.chessBoard.createFen(); // TODO:: This is dumb
+        this.officialFen = this.chessBoard.createFen(); //update fen in service
         if(setGameFen(this.gameId, this.officialFen)){result = true;}else{result =false;}
         if(setGameCaptures(this.gameId, this.capturedString)){result = true;}else{result = false;}
         return ; // Save the current FEN string to the database

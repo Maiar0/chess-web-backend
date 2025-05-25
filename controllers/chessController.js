@@ -44,7 +44,7 @@ exports.handle = (req, res) => {
         }
         let responseEnvelope = null; // Initialize the response envelope
         if(result){
-            responseEnvelope = ApiResponse.successResponse(//TODO:: we should grab data from database
+            responseEnvelope = ApiResponse.successResponse(//TODO:: we should grab data from database?
                 svc.officialFen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
