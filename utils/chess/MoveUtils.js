@@ -33,7 +33,7 @@ class MoveUtils{
         }
         return true;//CHECK MATE
     }
-
+    
     static isKingInCheck(fen){
         const dummyBoard = new ChessBoard(fen);
         return dummyBoard.kingInCheck;

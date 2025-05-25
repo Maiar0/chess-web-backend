@@ -38,7 +38,7 @@ class ChessGameService{
             //Check if move is enPassant
             if(parseInt(this.chessBoard.enPassant[0], 10) === to.x && parseInt(this.chessBoard.enPassant[1], 10) === to.y){
                 console.log('enPassant move from', from, 'to', to);
-                return this.chessBoard.enPassantMove(from, to);
+                return this.chessBoard.enPassantCapture(from, to);
             }
             //Check if move is capture
             if(this.chessBoard.board[to.x][to.y] !== null){

@@ -61,6 +61,7 @@ class ChessBoard {
         }
         return this.threatMap;
     }
+    //Performs piece capture
     capturePiece(from, to){
         const attacking = this.board[from.x][from.y]; // Get the piece at the from position
         const captured = this.board[to.x][to.y]; // Get the piece at the to position
@@ -75,6 +76,7 @@ class ChessBoard {
             return true; // Return true to indicate a successful capture
         } else throw new ApiError('capturePiece: This is not a capture?', 428); // Throw an error if the capture was invalid
     }
+    //Performs Piece Move
     movePiece(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
         const empty = this.board[to.x][to.y]; // Get the piece at the to position
@@ -91,7 +93,11 @@ class ChessBoard {
             return true; // Return true to indicate a successful move
         }else throw new ApiError('movePiece: This is a capture?', 429);// Throw an error if the move is invalid
     }
-    enPassantMove(from, to){
+    resolveMove(piece, from, to){
+
+    }
+    //Performs En Passant Capture
+    enPassantCapture(from, to){
         const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
         const dir = movingPiece.color === 'white' ? -1 : 1
         const captured = this.board[to.x][to.y + dir]; // Get the piece we will capture
@@ -105,17 +111,13 @@ class ChessBoard {
             return true; // Return true to indicate a successful move
         } 
     }
+    //Performs promotion
     promotePiece(from, to, promoteTo){//promoteTo is a char
         if(this.getPiece(to.x, to.y) !== null){
             this.capturePiece(from,to);
         }else{this.movePiece(from, to);}
         if(promoteTo.toLowerCase() === 'k') throw new ApiError("promotePiece: Can't promote to King!",430)
         this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
-    }
-    evaluateEnPassant(piece, from, to){
-        if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
-                this.setEnPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
-        }else{ this.enPassant = '-';}
     }
     resetBoard(){
         this.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Reset the FEN string to the initial state
@@ -128,8 +130,15 @@ class ChessBoard {
         
         return true;
     }
+    //evaluates if EnPassante is availble
+    evaluateEnPassant(piece, from, to){
+        if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
+                this.setEnPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
+        }else{ this.enPassant = '-';}
+    }
+    //Sets EnPassant String
     setEnPassant(x,y){
-        this.enPassant = x.toString()+y.toString(); // Set the en passant target square
+        this.enPassant = x.toString()+y.toString();
     }
     isThreatened(x, y){//Uses current threat map!
         //console.log("isThreatened: " , this.threatMap[x][y], this.getPiece(x,y))
@@ -161,6 +170,36 @@ class ChessBoard {
             }
         }
         return pieces; // Return the list of pieces of the specified color
+    }
+    //this is used to update castling rights if 'piece' moves
+    //we can call this on move completion and should update castling right correctly 
+    updateCastlingRights(piece, from) 
+    {
+        if (!piece || !from) return;
+
+        if (piece.constructor.name === 'King') {
+            // King moved: remove both castling rights for that color
+            if (piece.color === 'white') {
+                this.castlingAvaible = this.castlingAvaible.replace('K', '').replace('Q', '');
+            } else {
+                this.castlingAvaible = this.castlingAvaible.replace('k', '').replace('q', '');
+            }
+        }
+
+        if (piece.constructor.name === 'Rook') {
+            const y = piece.color === 'white' ? 0 : 7;
+
+            if (from.x === 0 && from.y === y) {
+                // Queen-side rook moved
+                this.castlingAvaible = this.castlingAvaible.replace(piece.color === 'white' ? 'Q' : 'q', '');
+            }
+            if (from.x === 7 && from.y === y) {
+                // King-side rook moved
+                this.castlingAvaible = this.castlingAvaible.replace(piece.color === 'white' ? 'K' : 'k', '');
+            }
+        }
+
+        if (this.castlingAvaible === '') this.castlingAvaible = '-';
     }
     boundsCheck(x, y) {
         // Check if the coordinates are within the bounds of the board

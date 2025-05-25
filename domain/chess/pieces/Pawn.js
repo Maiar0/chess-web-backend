@@ -19,7 +19,7 @@ class Pawn extends ChessPiece {
         //Movement Logic
         moves.push(...this.getNormalMoves(board));
         moves.push(...this.getCaptureMoves(board));
-        moves.push(...this.getenPassantMoves(board));
+        moves.push(...this.getEnPassantMoves(board));
         
         return moves; // Return the array of possible moves
     }
@@ -84,7 +84,7 @@ class Pawn extends ChessPiece {
     getFen() {
         return this.color === 'white' ? 'P' : 'p'; // Return the FEN representation of the piece
     }
-    getenPassantMoves(board){
+    getEnPassantMoves(board){
         let moves = [];
         const requiredRank = this.color === 'white' ? 4 : 3; // Determine the required rank for en passant
 
