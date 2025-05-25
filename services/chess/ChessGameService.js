@@ -1,5 +1,6 @@
 const ChessBoard = require('../../domain/chess/board/ChessBoard');
 const MoveUtils = require('../../utils/chess/MoveUtils');
+const FenUtils = require('../../utils/chess/FenUtils');
 const {createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures } = require('../../db/dbManager');
 const ApiError = require('../../utils/ApiError');
 
@@ -25,51 +26,6 @@ class ChessGameService{
     }
     newGame(){
         return true;
-    }
-    handleAction({action, from, to, promoteTo}){// Handle the action requested by the user //TODO:: This needs removed
-        let result = false;
-        switch(action){
-            case 'move':
-                result = this.requestMove(from,to);
-                break;
-            case 'promote':
-                result = this.requestPromotion(from, to, promoteTo);
-                break;
-            case 'newGame':
-                result = true;
-                break;
-            case 'info':
-                result = true;
-                break;
-            default: 
-                console.log("Action Unknown!?!");
-        }
-        if(result){
-            this.endTurn();
-            return true;
-        }else{
-            console.log("Failed to:", action);
-            return false;
-        }
-    }
-    endTurn(){
-        //Full move counter
-        if(this.chessBoard.activeColor === 'b') this.chessBoard.fullmove =  (parseInt(this.chessBoard.fullmove,10) + 1).toString();
-        this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
-        this.capturedString = this.parseCapturedPiece(this.chessBoard.capturedPieces);
-        console.log(this.capturedString);
-        this.saveFen(); // Save the current FEN string to the database
-        return true;
-    }
-    parseCapturedPiece(captured){
-        if(captured.length > 0){
-            let s = '';
-            for(let i = 0; i< captured.length; ++i){
-                s += captured[i].getFen();
-            }
-            return s;
-        }
-        return '';
     }
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
@@ -102,7 +58,6 @@ class ChessGameService{
     }
             
     validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
-        this.chessBoard.printThreatMap();
         let piece = this.chessBoard.getPiece(from.x,from.y);
         
         if(piece === null) // Check if there is a piece at the from position
@@ -125,12 +80,14 @@ class ChessGameService{
         if(!result) throw new ApiError("validateMove: Invalid move FROM = valid, TO = invalid", 437); // Move is invalid
         return result; // Return the result of the validation
     }
-    //simulate threat map to achieve Check Mate validation
-    simulateCheckMate(){
-        const dummyBoard = new ChessBoard(this.officialFen);
-        dummyBoard.generateThreatMap(dummyBoard.activeColor === 'w' ? 'white' : 'black')
-        dummyBoard.printThreatMap();
-        dummyBoard.printBoard();
+    endTurn(){
+        //Full move counter
+        if(this.chessBoard.activeColor === 'b') this.chessBoard.fullmove =  (parseInt(this.chessBoard.fullmove,10) + 1).toString();
+        this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
+        this.capturedString = FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces);
+        console.log(this.capturedString);
+        this.saveFen(); // Save the current FEN string to the database
+        return true;
     }
     saveFen(){
         //Save Fen back to database

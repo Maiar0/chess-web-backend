@@ -70,6 +70,17 @@ class FenUtils{
         return pieces;
     }
 
+    static parseCapturedPiece(captured){
+        if(captured.length > 0){
+            let s = '';
+            for(let i = 0; i< captured.length; ++i){
+                s += captured[i].getFen();
+            }
+            return s;
+        }
+        return '';
+    }
+
     static toAlgebraic(pos) {//convert to readable format
         const x = parseInt(pos[0], 10);   //  "0" → 0
         const y = parseInt(pos[1], 10);   //  "5" → 5
