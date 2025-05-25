@@ -1,91 +1,36 @@
 const ChessPieceFactory = require('../pieces/ChessPieceFactory');
 const ApiError = require('../../../utils/ApiError');
+const FenUtils = require('../../../utils/chess/FenUtils');
 
 class ChessBoard {
     constructor(fen, extras = {}) {
         this.fen = fen; // FEN string representing the board state
-        this.board = this.createBoard(); // Create the board based on the FEN string
-        this.capturedPieces = []; // Array to store captured pieces
-        if(typeof extras.captures === 'string' && extras.captures !== undefined && extras.captures.length > 0){//build captured array
-            
-            for(let i = 0; i < extras.captures.length; ++i){
-                const piece = ChessPieceFactory.createPiece(extras.captures[i]);
-                this.capturedPieces.push(ChessPieceFactory.createPiece(extras.captures[i]));
-            }
-        }
+        this.board = FenUtils.parseFen(this.fen); // Create the board based on the FEN string
+        console.log(extras.captures);
+        this.capturedPieces = FenUtils.parseCaptureString(extras.captures || '');
         this.kingInCheck = false;
         this.fenData();
-        this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
+        this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
+        
         this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
         
     }
-    createBoard() {
-        // Create an 8x8 board initialized with null values
-        const board = Array.from({ length: 8 }, () => Array(8).fill(null));
-        let rows = this.fen.split(' ')[0].split('/'); // Split the FEN string into rows
-        for (let i = 0; i < rows.length; i++){
-            let row = rows[i];
-            let x = 0; // Board file index
 
-            for(let o = 0; o < row.length; o++){
-                const pieceChar = row[o];
-
-                if(isNaN(pieceChar)){
-                    const piece = ChessPieceFactory.createPiece(pieceChar); // Create a piece using the factory
-                    piece.position = {x: x, y: 7-i }; // Set the position of the piece
-                    board[x][7-i] = piece; // Place the piece on the board
-                    x++; // Move to the next file
-                }else x += parseInt(pieceChar, 10); // If the character is a number, skip that many squares
-                
-            }
-        }
-        return board; // Return the created board 
-
-    }
     createFen(){
-        let fenArray = [];
-        for(let i = 0; i < 8; i++){
-            fenArray[i] = '';
-            let count = 0; // Counter for empty squares
-            for(let o = 0; o < 8; o++){
-                const piece = this.board[o][i]; // Get the piece at the current position
-                if (piece === null){
-                    count++;
-                }else{
-                    if(count > 0){
-                        fenArray[i] += count; // Add the number of empty squares to the FEN string
-                        count = 0; // Reset the counter
-                    }
-                    fenArray[i] += piece.getFen(); // Get the FEN representation of the piece
-                }
-            }
-            if(count > 0){
-                fenArray[i] += count; // Add the number of empty squares to the FEN string
-                count = 0; // Reset the counter
-            }
-        }
-        let fen = '';
-        for(let i = fenArray.length - 1; i >= 0; i--){
-            fen += fenArray[i]; // Concatenate the rows to form the FEN string
-            if(i > 0) fen += '/'; // Add a slash between rows
-        }
-        fen += ' ' + this.activeColor + ' '; // Add the active color
-        fen += this.castlingAvaible + ' '; // Add castling availability 
-        fen += this.enPassant !== '-' ? this.toAlgebraic(this.enPassant) : '-'; // Add en passant target square
-        fen += ' ' + this.halfmove + ' '; // Add halfmove clock
-        fen += this.fullmove; // Add fullmove number
-
+        const fen = FenUtils.parseBoard(this.board, this.activeColor,this.castlingAvaible, this.enPassant, this.halfmove, this.fullmove);
         return fen; // Return the FEN string representation of the board
     }
+
     fenData(){
         let fenFields = this.fen.split(' ');
         this.activeColor = fenFields[1];
         this.castlingAvaible = fenFields[2];
-        this.enPassant = fenFields[3].trim() !== '-' ? this.fromAlgebraic(fenFields[3]): '-';
+        this.enPassant = fenFields[3].trim() !== '-' ? FenUtils.fromAlgebraic(fenFields[3]): '-';
         this.halfmove = fenFields[4];
         this.fullmove = fenFields[5];
     }
+    
     generateThreatMap(color){
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false));
         let king = null;
@@ -99,7 +44,7 @@ class ChessBoard {
                     }
                 }
                 if(piece !== null && piece.constructor.name === 'Pawn' && piece.color === color){ // Check if the piece is not null and belongs to the opponent
-                    const moves = piece.getPossibleCaptures(this); // Get the possible moves for the piece//TODO:: we didnt actually need to create new function for this.
+                    const moves = piece.getCaptureMoves(this); // Get the possible moves for the piece//TODO:: we didnt actually need to create new function for this.
                     for(let move of moves){
                         this.threatMap[move.x][move.y] = true;
                     }
@@ -115,6 +60,7 @@ class ChessBoard {
             this.kingInCheck = false;
 
         }
+        return this.threatMap;
     }
     capturePiece(from, to){
         const attacking = this.board[from.x][from.y]; // Get the piece at the from position
@@ -160,11 +106,6 @@ class ChessBoard {
             return true; // Return true to indicate a successful move
         } 
     }
-    evaluateEnPassant(piece, from, to){
-        if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
-                this.setenPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
-        }else{ this.enPassant = '-';}
-    }
     promotePiece(from, to, promoteTo){//promoteTo is a char
         if(this.getPiece(to.x, to.y) !== null){
             this.capturePiece(from,to);
@@ -172,9 +113,14 @@ class ChessBoard {
         if(promoteTo.toLowerCase() === 'k') throw new ApiError("promotePiece: Can't promote to King!",430)
         this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
     }
+    evaluateEnPassant(piece, from, to){
+        if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
+                this.setEnPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
+        }else{ this.enPassant = '-';}
+    }
     resetBoard(){
         this.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Reset the FEN string to the initial state
-        this.board = this.createBoard(); // Reset the board to its initial state
+        this.board = FenUtils.parseFen(this.fen); // Reset the board to its initial state
         this.capturedPieces = []; // Clear the captured pieces array
         this.fenData(); // Reset the move data
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Reinitialize the threat map with false values
@@ -183,7 +129,7 @@ class ChessBoard {
         
         return true;
     }
-    setenPassant(x,y){
+    setEnPassant(x,y){
         this.enPassant = x.toString()+y.toString(); // Set the en passant target square
     }
     isThreatened(x, y){//Uses current threat map!
@@ -225,24 +171,7 @@ class ChessBoard {
         }
         return true;
     }
-    toAlgebraic(pos) {//convert to readable format
-        const x = parseInt(pos[0], 10);   //  "0" → 0
-        const y = parseInt(pos[1], 10);   //  "5" → 5
-        const letter = String.fromCharCode(97 + x);
-        const number = String(y + 1);              
-        return letter + number;
-    }
-    fromAlgebraic(coord) {//convert to useable format
-        if (typeof coord !== 'string' || coord.length !== 2) {
-            throw new ApiError(`Invalid input "${coord}"`, 431);
-        }
-        const letter = coord[0].toLowerCase();
-        const number = coord[1];
-        const x = letter.charCodeAt(0) - 97;
-        const y = parseInt(number, 10) -1;
-        if(!this.boundsCheck(x,y)) throw new ApiError("from Algebraic: pos not in bounds" + pos, 432);
-        return x.toString()+ y.toString();
-    }
+
     printThreatMap() {
     console.log("Threat Map:", this.activeColor);
     console.log("   a b c d e f g h");
