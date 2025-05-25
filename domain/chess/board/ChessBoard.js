@@ -6,7 +6,6 @@ class ChessBoard {
     constructor(fen, extras = {}) {
         this.fen = fen; // FEN string representing the board state
         this.board = FenUtils.parseFen(this.fen); // Create the board based on the FEN string
-        console.log(extras.captures);
         this.capturedPieces = FenUtils.parseCaptureString(extras.captures || '');
         this.kingInCheck = false;
         this.fenData();
@@ -150,13 +149,13 @@ class ChessBoard {
         if(this.board[x][y] === null) return null; // If the square is empty, return null
         return this.board[x][y];
     }
-    getPieces(color, suit) {
+    getPieces(color) {
         // Get all pieces of the specified color
         const pieces = [];
         for (let i = 0; i < 8; i++){
             for (let o = 0; o < 8; o++){
                 const piece = this.board[i][o]; // Get the piece at the current position
-                if(piece !== null && piece.color === color && piece.constructor.name === suit){ // Check if the piece belongs to the specified color
+                if(piece !== null && piece.color === color){ // Check if the piece belongs to the specified color
                     pieces.push(piece); // Add the piece to the list
                 }
             }

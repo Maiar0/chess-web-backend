@@ -13,12 +13,32 @@ class MoveUtils{
         console.log("*************STOP SIMULATION*************")
         return dummyBoard.kingInCheck;//return if king is in check?
     }
-    
+    //Checks if provided fen king is in check mate and returns result
     static simulationKingCheckMate(fen){
         const dummyBoard = new ChessBoard(fen);
-        dummyBoard.generateThreatMap(dummyBoard.activeColor === 'w' ? 'white' : 'black')
-        dummyBoard.printThreatMap();
-        dummyBoard.printBoard();
+        const pieces = dummyBoard.getPieces(dummyBoard.activeColor === 'w' ? 'white': 'black');//get all pieces to test
+        const king = pieces.find(p => p.constructor.name === 'King');//get King
+        if(!king) throw new Error('No king found on board.');
+        if (king.getMoves(dummyBoard).length > 0) return false;
+        for(let i = 0; i < pieces.length; ++i){
+            const piece = pieces[i];
+            const moves = piece.getMoves(dummyBoard);
+            for(let o = 0; o < moves.length; ++o){
+                const to = moves[o];
+                const from = piece.position;
+
+                console.log('SimulateKingCheckMate', to , from);
+                if(!this.simulationKingCheck(fen, from, to)){
+                    return false;//We have a move
+                }
+            }
+        }
+        return true;//CHECK MATE
+    }
+
+    static isKingInCheck(fen){
+        const dummyBoard = new ChessBoard(fen);
+        return dummyBoard.kingInCheck;
     }
 }
 module.exports = MoveUtils;

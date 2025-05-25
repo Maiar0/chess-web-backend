@@ -62,7 +62,6 @@ class FenUtils{
         let pieces = [];
         for(let i = 0; i < capturedStr.length; ++i){
             const piece = ChessPieceFactory.createPiece(capturedStr[i]);
-            console.log(piece)
             if(!piece) throw new Error("Invalide capture Piece: " + capturedStr[i]);
             pieces.push(piece);
             

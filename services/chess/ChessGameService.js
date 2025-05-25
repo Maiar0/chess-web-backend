@@ -15,6 +15,7 @@ class ChessGameService{
         this.capturedString = getGameCaptures(gameId);
         this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
         this.chessBoard = new ChessBoard(this.officialFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
+        this.CheckMate = false;
     }
     createGameId(){// Generate a random game ID
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -85,15 +86,17 @@ class ChessGameService{
         if(this.chessBoard.activeColor === 'b') this.chessBoard.fullmove =  (parseInt(this.chessBoard.fullmove,10) + 1).toString();
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
         this.capturedString = FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces);
-        console.log(this.capturedString);
         this.saveFen(); // Save the current FEN string to the database
+        if(MoveUtils.simulationKingCheckMate(this.officialFen)){
+            this.CheckMate = true;
+        }
         return true;
     }
     saveFen(){
         //Save Fen back to database
         let result = false;
-        this.chessBoard.fen = this.chessBoard.createFen(); // TODO:: This is dumb
-        if(setGameFen(this.gameId, this.chessBoard.fen)){result = true;}else{result =false;}
+        this.officialFen = this.chessBoard.createFen(); // TODO:: This is dumb
+        if(setGameFen(this.gameId, this.officialFen)){result = true;}else{result =false;}
         if(setGameCaptures(this.gameId, this.capturedString)){result = true;}else{result = false;}
         return ; // Save the current FEN string to the database
     }

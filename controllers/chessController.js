@@ -1,11 +1,12 @@
 const ApiResponse = require('../utils/ApiResponse');
+const MoveUtils = require('../utils/chess/MoveUtils');
 const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 
 exports.handle = (req, res) => {
     const {action, gameId, payload} = req.body;
     const svc = new ChessGameService(gameId);
-
+    console.log('-----------------Turn Start-----------------');
     try{
         let result = false;
         const {from, to} = payload;
@@ -14,7 +15,7 @@ exports.handle = (req, res) => {
                 if(svc.requestMove(from, to)){
                     console.log('Move successful from', from, 'to', to);
                     if(svc.endTurn()){
-                        console.log('-----------------Turn ended successfully-----------------');
+                        console.log('-----------------Turn End-----------------');
                         result = true;
                     }
                 }
@@ -44,11 +45,12 @@ exports.handle = (req, res) => {
         let responseEnvelope = null; // Initialize the response envelope
         if(result){
             responseEnvelope = ApiResponse.successResponse(//TODO:: we should grab data from database
-                svc.chessBoard.fen, // Get the FEN string from the chess board
+                svc.officialFen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
-                svc.chessBoard.kingInCheck, // Check if the active color is in check
-                svc.capturedString// Get the captured pieces
+                MoveUtils.isKingInCheck(svc.chessBoard.fen), // Check if the active color is in check
+                svc.capturedString,// Get the captured pieces
+                svc.CheckMate
             );
         }else{
             responseEnvelope = ApiResponse.error("Invalid Move", err.status); // Return an error response if the move is invalid
