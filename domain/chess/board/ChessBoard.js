@@ -62,7 +62,7 @@ class ChessBoard {
         return this.threatMap;
     }
     //Performs piece capture
-    capturePiece(from, to){
+    capturePiece(from, to){//TODO:: Modularize moving/capture/enpassant/promote/castling
         const attacking = this.board[from.x][from.y]; // Get the piece at the from position
         const captured = this.board[to.x][to.y]; // Get the piece at the to position
         if(captured !== null){ // Check if the piece is not null
@@ -71,7 +71,7 @@ class ChessBoard {
             this.board[from.x][from.y] = null;
             attacking.position = {x: to.x, y: to.y}; // Update the position of the piece
             captured.position = null; // Set the position of the captured piece to null
-            this.enPassant = '-'; //set enPassant to none
+            this.resolveMove(attacking, from, to);
             this.halfmove = '0';
             return true; // Return true to indicate a successful capture
         } else throw new ApiError('capturePiece: This is not a capture?', 428); // Throw an error if the capture was invalid
@@ -84,17 +84,21 @@ class ChessBoard {
             this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
             this.board[from.x][from.y] = null; // Set the old position to null
             movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
-            this.evaluateEnPassant(movingPiece, from, to);
+            //resolving chores
+            this.resolveMove(movingPiece, from, to);
             if(movingPiece.constructor.name === 'Pawn') {
                 this.halfmove = '0';
             }else{
                 this.halfmove = (parseInt(this.halfmove,10) + 1).toString()
             }
-            return true; // Return true to indicate a successful move
+             // Return true to indicate a successful move
+            return true;
         }else throw new ApiError('movePiece: This is a capture?', 429);// Throw an error if the move is invalid
     }
+    //resolves after move/capture/enPassant logic
     resolveMove(piece, from, to){
-
+        this.evaluateEnPassant(piece, from, to);
+        this.updateCastlingRights(piece, from);
     }
     //Performs En Passant Capture
     enPassantCapture(from, to){
@@ -119,6 +123,21 @@ class ChessBoard {
         if(promoteTo.toLowerCase() === 'k') throw new ApiError("promotePiece: Can't promote to King!",430)
         this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
     }
+    //Performs castling
+    castlingMove(from, to){
+        const finalPos = {x: to.x === 6 ? 5 : 3, y: from.y}; // Final position of the rook after castling
+        const startPos = {x: to.x === 6 ? 7 : 0, y: from.y}; // Starting position of the rook
+        const rook = this.getPiece(startPos.x, startPos.y);
+        const king = this.getPiece(from.x, from.y);
+        this.board[to.x][to.y] = king; // Move the king to the new position
+        this.board[from.x][from.y] = null; // Set the old position of the king to null
+        this.board[finalPos.x][finalPos.y] = rook; // Move the rook to the new position
+        this.board[startPos.x][startPos.y] = null; // Set the old position of the rook to null
+        rook.position = finalPos; // Update the position of the rook
+        this.resolveMove(king, from, to); // Resolve the move for the king
+        this.halfmove = '0'; // Reset the halfmove counter
+        return true;
+    }
     resetBoard(){
         this.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Reset the FEN string to the initial state
         this.board = FenUtils.parseFen(this.fen); // Reset the board to its initial state
@@ -132,12 +151,12 @@ class ChessBoard {
     }
     //evaluates if EnPassante is availble
     evaluateEnPassant(piece, from, to){
-        if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) {
+        if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) { //pawn and moved 2 forward
                 this.setEnPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
         }else{ this.enPassant = '-';}
     }
     //Sets EnPassant String
-    setEnPassant(x,y){
+    setEnPassant(x,y){//TODO:: Eliminate this.
         this.enPassant = x.toString()+y.toString();
     }
     isThreatened(x, y){//Uses current threat map!

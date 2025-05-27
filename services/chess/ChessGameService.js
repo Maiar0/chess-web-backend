@@ -40,6 +40,10 @@ class ChessGameService{
                 console.log('enPassant move from', from, 'to', to);
                 return this.chessBoard.enPassantCapture(from, to);
             }
+            //check if move is castling
+            if(MoveUtils.isCastlingMove(piece, from, to)){
+                return this.chessBoard.castlingMove(from, to);
+            }
             //Check if move is capture
             if(this.chessBoard.board[to.x][to.y] !== null){
                 console.log('Capturing piece from', from, 'to', to);
@@ -60,7 +64,7 @@ class ChessGameService{
             
     validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
         let piece = this.chessBoard.getPiece(from.x,from.y);
-        
+        let board = this.chessBoard;
         if(piece === null) // Check if there is a piece at the from position
             {throw new ApiError("validateMove: No piece at from position", 437);}; 
 
@@ -70,16 +74,15 @@ class ChessGameService{
         if(MoveUtils.simulationKingCheck(this.officialFen,from, to)){
             throw new ApiError('King is in Check.', 423);
         }
-        
-        let possibleMoves = piece.getMoves(this.chessBoard);
-        let result = false;
-        possibleMoves.forEach(element => {
-            if (element.x === to.x && element.y === to.y){
-                result = true; // Move is valid
-            }
-        });
-        if(!result) throw new ApiError("validateMove: Invalid move FROM = valid, TO = invalid", 437); // Move is invalid
-        return result; // Return the result of the validation
+        if(MoveUtils.castlingPossible(this.officialFen, from, to)){
+            console.log('Castling move from', from, 'to', to);
+            return true;//we shouldnt check isValidMove, it is not a valid normal move.
+        }
+        if(!MoveUtils.isValidMove(board, piece, to)) {
+            throw new ApiError("validateMove: Invalid move FROM = valid, TO = invalid", 437);
+        }
+    
+        return true;
     }
     endTurn(){
         //Full move counter
