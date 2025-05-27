@@ -28,6 +28,12 @@ class ChessGameService{
     newGame(){
         return true;
     }
+    infoGame(){
+        if(MoveUtils.simulationKingCheckMate(this.officialFen)){
+            console.log("CheckMate")
+            this.CheckMate = true;
+        }
+    };
     requestMove(from, to){// Request a move from the user
         if(this.validateMove(from,to)){//Check if piece can move
             const piece = this.chessBoard.getPiece(from.x, from.y);

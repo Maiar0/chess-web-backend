@@ -48,12 +48,12 @@ exports.handle = (req, res) => {
                 svc.officialFen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
-                MoveUtils.isKingInCheck(svc.chessBoard.fen), // Check if the active color is in check
+                MoveUtils.isKingInCheck(svc.officialFen), // Check if the active color is in check
                 svc.capturedString,// Get the captured pieces
                 svc.CheckMate
             );
         }else{
-            responseEnvelope = ApiResponse.error("Invalid Move", err.status); // Return an error response if the move is invalid
+            responseEnvelope = ApiResponse.error("Unkown Error", 400); // Return an error response if the move is invalid
         }
         return res.json(responseEnvelope); // Return the response envelope as JSON
     }catch (err) {
