@@ -95,9 +95,67 @@ class ChessBoard {
             return true;
         }else throw new ApiError('movePiece: This is a capture?', 429);// Throw an error if the move is invalid
     }
+    //move piece TODO:: test and implement
+    move(from, to, promotionChar){
+        const fromPiece = board[from.x][from.y];// get piece at from
+        const toPiece = board[to.x][to.y];//get piece at to if exists
+        this.board[to.x][to.y] = fromPiece;//move piece
+        this.board[from.x][from.y] = null;//null from tile
+        betaresovleMove(from, to, fromPiece, toPiece);
+    }
+    //this resolves a Move, captures all logic that needs to happen after a move.
+    betaresolveMove(from, to, fromPiece, toPiece, promotionChar){
+        let captured = null;
+        //enPassant
+        if(fromPiece.constructor.name === 'Pawn' && from.x !== to.x && toPiece === null){
+            const dir = fromPiece.color === 'white' ? -1 : 1;
+            captured = this.board[to.x][to.y +dir];
+            console.log('En Passante Move', fromPiece, to, captured);
+            this.capturedPieces.push(captured);//add piece to captured array
+            this.board[to.x][to.y + dir] = null; //clear board square
+            captured.position = null; // set captured piece position to null
+        }
+        //pawn promotion
+        else if(fromPiece.constructor.name === 'Pawn' && (to.y === 0 || to.y === 7)){
+            if(!promotionChar || promotionChar.toLowerCase() === 'k')throw new ApiError("Not valid promotion char.", 430)
+            let promotePiece  = ChessPieceFactory.createPiece(promotionChar);
+            promotePiece.position = to;
+            this.board[to.x][to.y] = promotePiece;
+            console.log('Pawn promotion:', fromPiece, promotePiece);
+        }
+        //castling
+        else if(fromPiece.constructor.name === 'King' && Math.abs(to.x - from.x) === 2){
+            const finalPos = {x: to.x === 6 ? 5 : 3, y: from.y}; // Final position of the rook after castling
+            const startPos = {x: to.x === 6 ? 7 : 0, y: from.y}; // Starting position of the rook
+            const rook = this.getPiece(startPos.x, startPos.y);
+            this.board[finalPos.x][from.y] = rook;//move rook
+            this.board[startPos.x][from.y] = null;//null old position
+            rook.position = finalPos; //update internal rook
+            console.log('Castling Move:', fromPiece, rook);
+        }
+        //captured
+        else if(toPiece !== null){
+            console.log('Capture:', fromPiece, toPiece);
+            captured = toPiece;
+            captured.position = null; //remove position of captured piece
+            this.capturedPieces.push(captured);//add piece to captured array
+        }
+        else{
+            console.log('Move:', fromPiece, to);
+        }
+        //deal with halfmove counter
+        if(fromPiece.constructor.name === 'Pawn' || captured !== null){
+            this.halfmove  = '0';
+        }else{
+            this.halfmove = (parseInt(this.halfmove,10) + 1).toString();// update half move if not Capture or Pawn
+        }
+        fromPiece.position = to;//update position of piece
+        this.updateEnPassant(fromPiece, from, to);
+        this.updateCastlingRights(fromPiece, from);
+    }
     //resolves after move/capture/enPassant logic
     resolveMove(piece, from, to){
-        this.evaluateEnPassant(piece, from, to);
+        this.updateEnPassant(piece, from, to);
         this.updateCastlingRights(piece, from);
     }
     //Performs En Passant Capture
@@ -149,8 +207,8 @@ class ChessBoard {
         
         return true;
     }
-    //evaluates if EnPassante is availble
-    evaluateEnPassant(piece, from, to){
+    //sets enPassante string after move
+    updateEnPassant(piece, from, to){
         if(piece.constructor.name === 'Pawn' && Math.abs(to.y - from.y) === 2) { //pawn and moved 2 forward
                 this.setEnPassant(to.x,to.y + (piece.color === 'white' ? -1 : 1)); // Set the en passant target square
         }else{ this.enPassant = '-';}
