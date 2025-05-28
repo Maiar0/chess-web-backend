@@ -34,10 +34,13 @@ class ChessGameService{
             this.CheckMate = true;
         }
     };
-    requestMove(from, to){// Request a move from the user
+    requestMove(from, to, promoteTo = ''){// Request a move from the user
+        
         if(this.validateMove(from,to)){//Check if piece can move
             const piece = this.chessBoard.getPiece(from.x, from.y);
-            //TODO:: This logic will need to be on front end, Pawn promotion
+            promoteTo = piece.color === 'white' ? 'Q' : 'q'
+            return this.chessBoard.move(from, to, promoteTo);
+            /*//TODO:: This logic will need to be on front end, Pawn promotion
             if(piece.constructor.name === 'Pawn' && to.y === (piece.color === 'white' ? 7 : 0)){
                 return this.requestPromotion(from, to, piece.color === 'white' ? 'Q' : 'q');
             }
@@ -57,7 +60,7 @@ class ChessGameService{
             }else{// Not a capture
                 console.log('Moving piece from', from, 'to', to);
                 return this.chessBoard.movePiece(from, to);
-            }
+            }*/
         }else{
             console.log('Invalid move from', from, 'to', to, '*************THIS SHOULD NOT PRINT*************');
             return false; // Move is invalid

@@ -97,11 +97,11 @@ class ChessBoard {
     }
     //move piece TODO:: test and implement
     move(from, to, promotionChar){
-        const fromPiece = board[from.x][from.y];// get piece at from
-        const toPiece = board[to.x][to.y];//get piece at to if exists
+        const fromPiece = this.board[from.x][from.y];// get piece at from
+        const toPiece = this.board[to.x][to.y];//get piece at to if exists
         this.board[to.x][to.y] = fromPiece;//move piece
         this.board[from.x][from.y] = null;//null from tile
-        betaresovleMove(from, to, fromPiece, toPiece);
+        return this.betaresolveMove(from, to, fromPiece, toPiece, promotionChar);
     }
     //this resolves a Move, captures all logic that needs to happen after a move.
     betaresolveMove(from, to, fromPiece, toPiece, promotionChar){
@@ -117,7 +117,7 @@ class ChessBoard {
         }
         //pawn promotion
         else if(fromPiece.constructor.name === 'Pawn' && (to.y === 0 || to.y === 7)){
-            if(!promotionChar || promotionChar.toLowerCase() === 'k')throw new ApiError("Not valid promotion char.", 430)
+            if(!promotionChar || promotionChar.toLowerCase() === 'k') throw new ApiError("Not valid promotion char.", 430)
             let promotePiece  = ChessPieceFactory.createPiece(promotionChar);
             promotePiece.position = to;
             this.board[to.x][to.y] = promotePiece;
@@ -152,6 +152,7 @@ class ChessBoard {
         fromPiece.position = to;//update position of piece
         this.updateEnPassant(fromPiece, from, to);
         this.updateCastlingRights(fromPiece, from);
+        return true;
     }
     //resolves after move/capture/enPassant logic
     resolveMove(piece, from, to){
