@@ -70,7 +70,7 @@ class ChessBoard {
         return this.resolveMove(from, to, fromPiece, toPiece, promotionChar);
     }
     //this resolves a Move, captures all logic that needs to happen after a move.
-    resolveMove(from, to, fromPiece, toPiece, promotionChar){
+    resolveMove(from, to, fromPiece, toPiece, promotionChar = ''){
         let captured = null;
         //enPassant
         if(fromPiece.constructor.name === 'Pawn' && from.x !== to.x && toPiece === null){
@@ -83,6 +83,7 @@ class ChessBoard {
         }
         //pawn promotion
         else if(fromPiece.constructor.name === 'Pawn' && (to.y === 0 || to.y === 7)){
+            console.log('Promotion Char:', promotionChar)
             if(!promotionChar || promotionChar.toLowerCase() === 'k') throw new ApiError("Not valid promotion char.", 403)
             let promotePiece  = ChessPieceFactory.createPiece(promotionChar);
             promotePiece.position = to;

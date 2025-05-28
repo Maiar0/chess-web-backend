@@ -10,18 +10,19 @@ exports.handle = (req, res) => {
     console.log('-----------------Turn Start-----------------');
     try{
         let result = false;
-        const {from, to} = payload;
+        const {from, to, promoteTo} = payload;
+        console.log('Payload:', payload)
         switch(action){
             case 'move':
-                if(svc.requestMove(from, to)){
-                    console.log('Move successful from', from, 'to', to);
+                if(svc.requestMove(from, to, promoteTo, playerId)){
+                    console.log('Move successful from', from, 'to', to, 'promoteTo', promoteTo);
                     if(svc.endTurn()){
                         console.log('-----------------Turn End-----------------');
                         result = true;
                     }
                 }
                 break;
-            case 'promote':
+            case 'promote'://TODO:: Remove
                 if(svc.requestPromotion(from, to, payload.promoteTo)){
                     if(svc.endTurn()){
                         result = true;
@@ -35,7 +36,7 @@ exports.handle = (req, res) => {
                 }
                 break;
             case 'info':
-            if(svc.newGame(playerId)){
+            if(svc.infoGame(playerId)){
                 console.log('-----------------Game info requested', gameId,'---------------------');
                 result = true;
             }

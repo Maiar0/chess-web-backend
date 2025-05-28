@@ -30,35 +30,46 @@ class ChessGameService{
     newGame(){
         return true;
     }
+    //TODO:: should set players on first loads of game, White is always set by whoever loads in first, black thereafter.
     infoGame(playerId){
         const color = this.chessBoard.activeColor === 'w' ? 'white': 'black';
         const opponentColor = this.chessBoard.activeColor === 'w' ? 'black': 'white';
         const currentPlayer = getPlayer(this.gameId, color)
         const opponentPlayer = getPlayer(this.gameId, opponentColor)
-        console.log("trying to set players")
         if(!currentPlayer && playerId !== opponentPlayer){
             console.log('SetPlayer')
             setPlayer(this.gameId, color, playerId);
         }else{
-            throw new ApiError(`Color "${color}" is already assigned to another player.`, 403);
+            //TODO:: do nothing?
+            //throw new ApiError(`Color "${color}" is already assigned to another player.`, 403);
         }
         return true;
     };
-    requestMove(from, to, promoteTo = ''){// Request a move from the user
-        
+    requestMove(from, to, promoteTo, playerId){// Request a move from the user
+        if(!this.isPlayersTurn(playerId)) throw new ApiError('Not your turn.', 403);
         if(this.validateMove(from,to)){//Check if piece can move
             const piece = this.chessBoard.getPiece(from.x, from.y);
-            promoteTo = piece.color === 'white' ? 'Q' : 'q'
             return this.chessBoard.move(from, to, promoteTo);
         }else{
             console.log('Invalid move from', from, 'to', to, '*************THIS SHOULD NOT PRINT*************');
             return false; // Move is invalid
         }
     }
+    isPlayersTurn(playerId){
+        const color = this.chessBoard.activeColor === 'w' ? 'white': 'black';
+        const currentPlayer = getPlayer(this.gameId, color)
+        if(playerId === currentPlayer){
+            console.log('***Player can Move***');
+        }else{
+            //TODO:: to enable multiplayer, throw here.
+            console.log('***Not Players turn***');
+        }
+        return true;
+    }
     requestPromotion(from, to, promoteTo){// Request a promotion from the user
         this.chessBoard.promotePiece(from, to, promoteTo);//Lets promote
         return true;
-    }
+    }//TOOD:: Remove
             
     validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
         let piece = this.chessBoard.getPiece(from.x,from.y);
@@ -69,7 +80,7 @@ class ChessGameService{
         if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) // Check if the piece is the correct color
             {throw new ApiError("validateMove: Invalid piece color", 403);}; 
 
-        if(MoveUtils.simulationKingCheck(this.officialFen,from, to)){
+        if(MoveUtils.simulationKingCheck(this.officialFen,from, to)){//TODO:: Set better error messages
             throw new ApiError('King is in Check.', 403);
         }
         if(MoveUtils.castlingPossible(this.officialFen, from, to)){
