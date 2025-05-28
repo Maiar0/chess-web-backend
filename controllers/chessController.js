@@ -40,7 +40,7 @@ exports.handle = (req, res) => {
             }
                 break;
             default: 
-                throw new ApiError("Action Unknown: " + action,520);
+                throw new ApiError("Bad request: " + action ,400);
         }
         let responseEnvelope = null; // Initialize the response envelope
         if(result){

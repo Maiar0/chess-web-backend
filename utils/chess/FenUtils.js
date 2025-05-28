@@ -91,7 +91,7 @@ class FenUtils{
     
     static fromAlgebraic(coord) {//convert to coordinate format
         if (typeof coord !== 'string' || coord.length !== 2) {
-            throw new ApiError(`Invalid input "${coord}"`, 431);
+            throw new ApiError(`Invalid input "${coord}"`, 500);
         }
         const letter = coord[0].toLowerCase();
         const number = coord[1];

@@ -51,14 +51,14 @@ class MoveUtils{
         //Check FEN
         let fenIndicator = dummyBoard.activeColor === 'w' ? 'KQ' : 'kq'; // Determine the castling indicator based on active color
         fenIndicator = to.x === 6 ? fenIndicator.charAt(0) : fenIndicator.charAt(1); // Determine the castling indicator based on the target position
-        if(!dummyBoard.castlingAvaible.includes(fenIndicator)) throw new ApiError('Castling not availble', 437); // castling not available
+        if(!dummyBoard.castlingAvaible.includes(fenIndicator)) throw new ApiError('Castling not availble', 403); // castling not available
         
         // check if possible castling move
         const color = dummyBoard.activeColor === 'w' ? 'white' : 'black';
         const finalPos = {x: to.x === 6 ? 5 : 3, y: from.y}; // Final position of the rook after castling
         const startPos = {x: to.x === 6 ? 7 : 0, y: from.y}; // Starting position of the rook
         const rook = dummyBoard.getPiece(startPos.x, startPos.y);
-        if(rook !== null && rook.constructor.name !== 'Rook') throw new ApiError('Castling not possible, Rook is not in correct position', 438); // Rook is not in correct position
+        if(rook !== null && rook.constructor.name !== 'Rook') throw new ApiError('Castling not possible, Rook is not in correct position', 403); // Rook is not in correct position
         //check if path unblocked check threat
         if(this.isValidMove(dummyBoard, rook, finalPos) && dummyBoard.getPiece(finalPos.x, finalPos.y ) === null){
             //Check if squares are threatened

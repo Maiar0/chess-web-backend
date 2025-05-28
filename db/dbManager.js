@@ -50,7 +50,7 @@ function getGameFen(gameId) {
     const stmt = db.prepare('SELECT fen FROM game_state WHERE id = ?');
     const row = stmt.get(1);      // or use whatever your row-id is
     db.close();
-    if (!row) throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 426);
+    if (!row) throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 404);
     return row.fen; // Return the FEN string from the database
 }
 function setGameFen(gameId, fen) {
@@ -64,7 +64,7 @@ function setGameFen(gameId, fen) {
     const info = stmt.run(fen, 1); // or use whatever your row-id is
     db.close();
     if (info.changes === 0) {
-        throw new ApiError('No rows updated. Check if the game ID is correct.', 427);
+        throw new ApiError('No rows updated. Check if the game ID is correct.', 404);
     }
     return info.changes;
 }
@@ -79,7 +79,7 @@ function setGameCaptures(gameId, captures) {
     db.close();
 
     if (info.changes === 0) {
-        throw new ApiError('No rows updated. Check if the game ID is correct.', 428);
+        throw new ApiError('No rows updated. Check if the game ID is correct.', 404);
     }
     return info.changes;
 }
@@ -92,7 +92,7 @@ function getGameCaptures(gameId) {
     
     db.close();
     if (!row) {
-        throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 429);
+        throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 404);
     }
 
     return row.captures;

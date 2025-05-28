@@ -40,27 +40,6 @@ class ChessGameService{
             const piece = this.chessBoard.getPiece(from.x, from.y);
             promoteTo = piece.color === 'white' ? 'Q' : 'q'
             return this.chessBoard.move(from, to, promoteTo);
-            /*//TODO:: This logic will need to be on front end, Pawn promotion
-            if(piece.constructor.name === 'Pawn' && to.y === (piece.color === 'white' ? 7 : 0)){
-                return this.requestPromotion(from, to, piece.color === 'white' ? 'Q' : 'q');
-            }
-            //Check if move is enPassant
-            if(parseInt(this.chessBoard.enPassant[0], 10) === to.x && parseInt(this.chessBoard.enPassant[1], 10) === to.y){
-                console.log('enPassant move from', from, 'to', to);
-                return this.chessBoard.enPassantCapture(from, to);
-            }
-            //check if move is castling
-            if(MoveUtils.isCastlingMove(piece, from, to)){
-                return this.chessBoard.castlingMove(from, to);
-            }
-            //Check if move is capture
-            if(this.chessBoard.board[to.x][to.y] !== null){
-                console.log('Capturing piece from', from, 'to', to);
-                return this.chessBoard.capturePiece(from, to);
-            }else{// Not a capture
-                console.log('Moving piece from', from, 'to', to);
-                return this.chessBoard.movePiece(from, to);
-            }*/
         }else{
             console.log('Invalid move from', from, 'to', to, '*************THIS SHOULD NOT PRINT*************');
             return false; // Move is invalid
@@ -75,20 +54,20 @@ class ChessGameService{
         let piece = this.chessBoard.getPiece(from.x,from.y);
         let board = this.chessBoard;
         if(piece === null) // Check if there is a piece at the from position
-            {throw new ApiError("validateMove: No piece at from position", 437);}; 
+            {throw new ApiError("validateMove: No piece at from position", 400);}; 
 
         if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) // Check if the piece is the correct color
-            {throw new ApiError("validateMove: Invalid piece color", 436);}; 
+            {throw new ApiError("validateMove: Invalid piece color", 403);}; 
 
         if(MoveUtils.simulationKingCheck(this.officialFen,from, to)){
-            throw new ApiError('King is in Check.', 423);
+            throw new ApiError('King is in Check.', 403);
         }
         if(MoveUtils.castlingPossible(this.officialFen, from, to)){
             console.log('Castling move from', from, 'to', to);
             return true;//we shouldnt check isValidMove, it is not a valid normal move.
         }
         if(!MoveUtils.isValidMove(board, piece, to)) {
-            throw new ApiError("validateMove: Invalid move FROM = valid, TO = invalid", 437);
+            throw new ApiError("validateMove: Invalid move FROM = valid, TO = invalid", 403);
         }
     
         return true;

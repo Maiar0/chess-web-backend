@@ -61,50 +61,16 @@ class ChessBoard {
         }
         return this.threatMap;
     }
-    //Performs piece capture
-    capturePiece(from, to){//TODO:: Modularize moving/capture/enpassant/promote/castling
-        const attacking = this.board[from.x][from.y]; // Get the piece at the from position
-        const captured = this.board[to.x][to.y]; // Get the piece at the to position
-        if(captured !== null){ // Check if the piece is not null
-            this.capturedPieces.push(captured); // Add the piece to the captured pieces array
-            this.board[to.x][to.y] = attacking; // Remove the piece from the board
-            this.board[from.x][from.y] = null;
-            attacking.position = {x: to.x, y: to.y}; // Update the position of the piece
-            captured.position = null; // Set the position of the captured piece to null
-            this.resolveMove(attacking, from, to);
-            this.halfmove = '0';
-            return true; // Return true to indicate a successful capture
-        } else throw new ApiError('capturePiece: This is not a capture?', 428); // Throw an error if the capture was invalid
-    }
-    //Performs Piece Move
-    movePiece(from, to){
-        const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
-        const empty = this.board[to.x][to.y]; // Get the piece at the to position
-        if(empty === null){ // Check if the piece is not null
-            this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
-            this.board[from.x][from.y] = null; // Set the old position to null
-            movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
-            //resolving chores
-            this.resolveMove(movingPiece, from, to);
-            if(movingPiece.constructor.name === 'Pawn') {
-                this.halfmove = '0';
-            }else{
-                this.halfmove = (parseInt(this.halfmove,10) + 1).toString()
-            }
-             // Return true to indicate a successful move
-            return true;
-        }else throw new ApiError('movePiece: This is a capture?', 429);// Throw an error if the move is invalid
-    }
     //move piece TODO:: test and implement
     move(from, to, promotionChar){
         const fromPiece = this.board[from.x][from.y];// get piece at from
         const toPiece = this.board[to.x][to.y];//get piece at to if exists
         this.board[to.x][to.y] = fromPiece;//move piece
         this.board[from.x][from.y] = null;//null from tile
-        return this.betaresolveMove(from, to, fromPiece, toPiece, promotionChar);
+        return this.resolveMove(from, to, fromPiece, toPiece, promotionChar);
     }
     //this resolves a Move, captures all logic that needs to happen after a move.
-    betaresolveMove(from, to, fromPiece, toPiece, promotionChar){
+    resolveMove(from, to, fromPiece, toPiece, promotionChar){
         let captured = null;
         //enPassant
         if(fromPiece.constructor.name === 'Pawn' && from.x !== to.x && toPiece === null){
@@ -117,7 +83,7 @@ class ChessBoard {
         }
         //pawn promotion
         else if(fromPiece.constructor.name === 'Pawn' && (to.y === 0 || to.y === 7)){
-            if(!promotionChar || promotionChar.toLowerCase() === 'k') throw new ApiError("Not valid promotion char.", 430)
+            if(!promotionChar || promotionChar.toLowerCase() === 'k') throw new ApiError("Not valid promotion char.", 403)
             let promotePiece  = ChessPieceFactory.createPiece(promotionChar);
             promotePiece.position = to;
             this.board[to.x][to.y] = promotePiece;
@@ -152,49 +118,6 @@ class ChessBoard {
         fromPiece.position = to;//update position of piece
         this.updateEnPassant(fromPiece, from, to);
         this.updateCastlingRights(fromPiece, from);
-        return true;
-    }
-    //resolves after move/capture/enPassant logic
-    resolveMove(piece, from, to){
-        this.updateEnPassant(piece, from, to);
-        this.updateCastlingRights(piece, from);
-    }
-    //Performs En Passant Capture
-    enPassantCapture(from, to){
-        const movingPiece = this.board[from.x][from.y]; // Get the piece at the from position
-        const dir = movingPiece.color === 'white' ? -1 : 1
-        const captured = this.board[to.x][to.y + dir]; // Get the piece we will capture
-        if(captured !== null){ 
-            this.capturedPieces.push(captured); // Add the piece to the captured pieces array
-            this.board[to.x][to.y] = movingPiece; // Move the piece to the new position
-            this.board[to.x][to.y + dir] = null; // Move the piece to the new position
-            this.board[from.x][from.y] = null; // Set the old position to null
-            movingPiece.position = {x: to.x, y: to.y}; // Update the position of the piece
-            this.enPassant = '-'; //set enPassant to none
-            return true; // Return true to indicate a successful move
-        } 
-    }
-    //Performs promotion
-    promotePiece(from, to, promoteTo){//promoteTo is a char
-        if(this.getPiece(to.x, to.y) !== null){
-            this.capturePiece(from,to);
-        }else{this.movePiece(from, to);}
-        if(promoteTo.toLowerCase() === 'k') throw new ApiError("promotePiece: Can't promote to King!",430)
-        this.board[to.x][to.y] = ChessPieceFactory.createPiece(promoteTo); // Create a new piece using the factory
-    }
-    //Performs castling
-    castlingMove(from, to){
-        const finalPos = {x: to.x === 6 ? 5 : 3, y: from.y}; // Final position of the rook after castling
-        const startPos = {x: to.x === 6 ? 7 : 0, y: from.y}; // Starting position of the rook
-        const rook = this.getPiece(startPos.x, startPos.y);
-        const king = this.getPiece(from.x, from.y);
-        this.board[to.x][to.y] = king; // Move the king to the new position
-        this.board[from.x][from.y] = null; // Set the old position of the king to null
-        this.board[finalPos.x][finalPos.y] = rook; // Move the rook to the new position
-        this.board[startPos.x][startPos.y] = null; // Set the old position of the rook to null
-        rook.position = finalPos; // Update the position of the rook
-        this.resolveMove(king, from, to); // Resolve the move for the king
-        this.halfmove = '0'; // Reset the halfmove counter
         return true;
     }
     resetBoard(){

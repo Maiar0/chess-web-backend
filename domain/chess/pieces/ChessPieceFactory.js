@@ -25,7 +25,7 @@ class ChessPieceFactory{
             case 'k':
                 return new King(color);
             default:
-                throw new ApiError('Invalid piece type', 434);
+                throw new ApiError('Bad Request: Invalid piece type', 400);
         }
     }
 }
