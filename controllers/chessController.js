@@ -4,8 +4,9 @@ const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 
 exports.handle = (req, res) => {
-    const {action, gameId, payload} = req.body;
+    const {action, gameId, payload, playerId} = req.body;
     const svc = new ChessGameService(gameId);
+    console.log('PlayerId:', playerId);
     console.log('-----------------Turn Start-----------------');
     try{
         let result = false;
@@ -34,7 +35,7 @@ exports.handle = (req, res) => {
                 }
                 break;
             case 'info':
-            if(svc.newGame(gameId)){
+            if(svc.newGame(playerId)){
                 console.log('-----------------Game info requested', gameId,'---------------------');
                 result = true;
             }

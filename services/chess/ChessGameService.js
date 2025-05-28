@@ -1,7 +1,7 @@
 const ChessBoard = require('../../domain/chess/board/ChessBoard');
 const MoveUtils = require('../../utils/chess/MoveUtils');
 const FenUtils = require('../../utils/chess/FenUtils');
-const {createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures } = require('../../db/dbManager');
+const {createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures, getPlayer, setPlayer } = require('../../db/dbManager');
 const ApiError = require('../../utils/ApiError');
 
 class ChessGameService{
@@ -12,12 +12,14 @@ class ChessGameService{
         }else{
             this.gameId = gameId;
         }
+        console.log("gameId:", this.gameId)
         this.capturedString = getGameCaptures(gameId);
         this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
         this.chessBoard = new ChessBoard(this.officialFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
         this.CheckMate = false;
     }
     createGameId(){// Generate a random game ID
+        console.log('creating game')
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
         for (let i = 0; i < 9; i++) {
@@ -28,11 +30,19 @@ class ChessGameService{
     newGame(){
         return true;
     }
-    infoGame(){
-        if(MoveUtils.simulationKingCheckMate(this.officialFen)){
-            console.log("CheckMate")
-            this.CheckMate = true;
+    infoGame(playerId){
+        const color = this.chessBoard.activeColor === 'w' ? 'white': 'black';
+        const opponentColor = this.chessBoard.activeColor === 'w' ? 'black': 'white';
+        const currentPlayer = getPlayer(this.gameId, color)
+        const opponentPlayer = getPlayer(this.gameId, opponentColor)
+        console.log("trying to set players")
+        if(!currentPlayer && playerId !== opponentPlayer){
+            console.log('SetPlayer')
+            setPlayer(this.gameId, color, playerId);
+        }else{
+            throw new ApiError(`Color "${color}" is already assigned to another player.`, 403);
         }
+        return true;
     };
     requestMove(from, to, promoteTo = ''){// Request a move from the user
         

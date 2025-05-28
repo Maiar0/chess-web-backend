@@ -2,7 +2,7 @@ const fs    = require('fs');
 const path  = require('path'); 
 const Database = require('better-sqlite3');
 const { get } = require('http');
-
+//TODO:: Typo
 const intialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // initial FEN string for chess
 const dbDir = path.join(__dirname, '..', 'games');// Directory to store game databases
 
@@ -18,13 +18,16 @@ function createGameDB(gameId){
         CREATE TABLE IF NOT EXISTS game_state ( 
         id          INTEGER     PRIMARY KEY,
         fen         TEXT        NOT NULL,
-        captures    TEXT        DEFAULT ''
+        captures    TEXT        DEFAULT '',
+        white       TEXT        DEFAULT '',
+        black       TEXT        DEFAULT '',
+        lastMove    DATETIME    DEFAULT (datetime('now'))
         );
     `);
     // Create the game_state table if it doesn't exist
     db.prepare(`
-        INSERT OR REPLACE INTO game_state (id, fen, captures)
-        VALUES (1,?,'');
+        INSERT OR REPLACE INTO game_state (id, fen, captures, white, black, lastMove)
+        VALUES (1, ?, '', '', '', datetime('now'));
     `).run(intialFen);// Insert initial FEN string into the game_state table
     
     db.close();
@@ -98,6 +101,45 @@ function getGameCaptures(gameId) {
     return row.captures;
 }
 
+function getPlayer(gameId, color) {
+    const db = getGameDB(gameId);
+    if (!db) return null;
+
+    if (color !== 'white' && color !== 'black') {
+        throw new ApiError('Invalid color provided. Must be "white" or "black".', 400);
+    }
+
+    const stmt = db.prepare(`SELECT ${color} FROM game_state WHERE id = ?`);
+    const row = stmt.get(1);
+
+    db.close();
+
+    if (!row) {
+        throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 404);
+    }
+
+    return row[color];
+}
+
+function setPlayer(gameId, color, playerId) {
+    const db = getGameDB(gameId);
+    if (!db) return null;
+
+    if (color !== 'white' && color !== 'black') {
+        throw new ApiError('Invalid color provided. Must be "white" or "black".', 400);
+    }
+
+    const stmt = db.prepare(`UPDATE game_state SET ${color} = ? WHERE id = ?`);
+    const result = stmt.run(playerId, 1);
+
+    db.close();
+
+    if (result.changes === 0) {
+        throw new ApiError('Failed to set player. No rows were updated.', 500);
+    }
+
+    return true;
+}
 
 
 module.exports = {
@@ -107,5 +149,7 @@ module.exports = {
     getGameFen,
     setGameFen,
     setGameCaptures,
-    getGameCaptures
+    getGameCaptures,
+    getPlayer,
+    setPlayer
 };
