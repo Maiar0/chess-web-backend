@@ -16,7 +16,7 @@ class ChessGameService{
         this.capturedString = getGameCaptures(gameId);
         this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
         this.chessBoard = new ChessBoard(this.officialFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
-        this.CheckMate = false;
+        this.CheckMate = null;
     }
     createGameId(){// Generate a random game ID
         console.log('creating game')
@@ -102,7 +102,7 @@ class ChessGameService{
         if(MoveUtils.simulationKingCheckMate(this.officialFen)){
             console.log("CheckMate")
             this.CheckMate = true;
-        }
+        }else{console.log('move was found.');}
         return true;
     }
     saveFen(){

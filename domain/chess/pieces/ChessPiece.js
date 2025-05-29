@@ -1,6 +1,6 @@
 const ApiError = require('../../../utils/ApiError');
 
-class ChessPiece{
+class ChessPiece{//TODO:: Restucture for position?
     constructor(color, position) {
         this.color = color; // 'white' or 'black'
         this.position = position; // { x: 0-7, y: 0-7 }

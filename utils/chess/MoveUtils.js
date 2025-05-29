@@ -28,6 +28,7 @@ class MoveUtils{
                 const to = moves[o];
                 const from = piece.position;
                 if(!this.simulationKingCheck(fen, from, to)){
+                    console.log("We found a move!", from, to);
                     return false;//We have a move
                 }
             }
