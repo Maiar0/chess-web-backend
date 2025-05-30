@@ -1,6 +1,7 @@
 const ChessPieceFactory = require('../pieces/ChessPieceFactory');
 const ApiError = require('../../../utils/ApiError');
 const FenUtils = require('../../../utils/chess/FenUtils');
+//This class contains board state, should be reworked to represent board in a simpler state.
 
 class ChessBoard {
     constructor(fen, extras = {}) {
@@ -12,7 +13,7 @@ class ChessBoard {
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
         
-        this.generateThreatMap(threatColor); // Create the threat map for the opponent's pieces
+        this.generateThreatMap(threatColor); // TODO:: we should make this use method not save to object.
         
     }
 
@@ -30,7 +31,7 @@ class ChessBoard {
         this.fullmove = fenFields[5];
     }
     
-    generateThreatMap(color){
+    generateThreatMap(color){//this should take a board and color, return map, and kingInCheck
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false));
         let king = null;
         for(let i = 0; i < 8; i++){
@@ -53,6 +54,9 @@ class ChessBoard {
                 }
             }
         }
+
+        if(!king) return this.threatMap;// if a king isnt found we got problems
+
         if(this.isThreatened(king.position.x, king.position.y)){
             this.kingInCheck = true;
         }else{
@@ -69,6 +73,7 @@ class ChessBoard {
         this.board[from.x][from.y] = null;//null from tile
         return this.resolveMove(from, to, fromPiece, toPiece, promotionChar);
     }
+
     //this resolves a Move, captures all logic that needs to happen after a move.
     resolveMove(from, to, fromPiece, toPiece, promotionChar = ''){
         let captured = null;
