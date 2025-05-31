@@ -55,8 +55,6 @@ class ChessBoard {
             }
         }
 
-        if(!king) return this.threatMap;// if a king isnt found we got problems
-
         if(this.isThreatened(king.position.x, king.position.y)){
             this.kingInCheck = true;
         }else{
@@ -154,10 +152,6 @@ class ChessBoard {
         }else{
             return false; // The square is not threatened
         }
-    }
-    isOccupied(x, y) {
-        // Check if the square at (x, y) is occupied by a piece
-        return this.board[x][y] !== null;
     }
     getPiece(x, y) {
         if(x < 0 || x > 7 || y < 0 || y > 7) return null; // Check if the coordinates are within bounds
