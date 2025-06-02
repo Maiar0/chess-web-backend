@@ -23,10 +23,8 @@ class Knight extends ChessPiece {
                 const piece = board.getPiece(x,y); // Get the piece at the new position
                 if(piece === null ){
                     moves.push({ x: x, y: y, capture: false }); // Add the move to the list if the square is empty
-                }else{
-                    if(piece.color !== this.color){
-                        moves.push({ x: x, y: y, capture: true }); // Capture
-                    }
+                }else if(piece.color !== this.color){
+                    moves.push({ x: x, y: y, capture: true }); // Capture
                 }
             }
         }
