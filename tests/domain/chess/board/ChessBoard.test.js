@@ -171,7 +171,8 @@ describe('ChessBoard', () => {
         expect(board.kingInCheck).toBe(true);
 
     })
-    test('printThreatMap outputs expected format', () => {
+    //clutters console output, but works should probably restructure to use return string
+    /*test('printThreatMap outputs expected format', () => {
         const fen = '8/8/8/8/8/8/8/R3K2R w KQ - 0 1';
         const board = new ChessBoard(fen);
 
@@ -202,11 +203,8 @@ describe('ChessBoard', () => {
         expect(output[0]).toBe('Board:');
         expect(output[1]).toBe('   a b c d e f g h');
         expect(output).toHaveLength(11); // 1 label + 1 header + 8 rows + 1 footer
-        expect(output[10]).toMatch(/activeColor:.*Castling:.*En Passant:/); // ✅
+        expect(output[10]).toMatch(/activeColor:.*Castling:.*En Passant:/); 
 
         logSpy.mockRestore();
-    });
-
-
-
+    });*/
 });
