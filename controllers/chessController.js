@@ -4,20 +4,18 @@ const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 
 exports.handle = (req, res) => {
+    console.log('-----------------Recieved Request-----------------');
     const {action, gameId, payload, playerId} = req.body;
+    console.log('(action:', action, ')(gameId:', gameId, ')(payload:', payload,')(playerId:', playerId,')');
     const svc = new ChessGameService(gameId);
-    console.log('PlayerId:', playerId);
-    console.log('-----------------Turn Start-----------------');
     try{
         let result = false;
-        const {from, to, promoteTo} = payload;
-        console.log('Payload:', payload)
+        const {from, to, promoteTo, isAi} = payload;
         switch(action){
             case 'move':
                 if(svc.requestMove(from, to, promoteTo, playerId)){
                     console.log('Move successful from', from, 'to', to, 'promoteTo', promoteTo);
                     if(svc.endTurn()){
-                        console.log('-----------------Turn End-----------------');
                         result = true;
                     }
                 }
@@ -30,7 +28,7 @@ exports.handle = (req, res) => {
                 }
                 break;
             case 'newGame':
-                if(svc.newGame()){
+                if(svc.newGame(isAi)){
                     console.log('-----------------New game started---------------');
                     result = true;
                 }
@@ -44,6 +42,7 @@ exports.handle = (req, res) => {
             default: 
                 throw new ApiError("Bad request: " + action ,400);
         }
+        console.log('-----------------Request Completed-----------------');
         let responseEnvelope = null; // Initialize the response envelope
         if(result){
             responseEnvelope = ApiResponse.successResponse(//TODO:: we should grab data from database?

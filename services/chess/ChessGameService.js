@@ -1,6 +1,7 @@
 const ChessBoard = require('../../domain/chess/board/ChessBoard');
 const MoveUtils = require('../../utils/chess/MoveUtils');
 const FenUtils = require('../../utils/chess/FenUtils');
+const {getBestMove} = require('../../utils/chess/StockFishUtil');
 const {createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures, getPlayer, setPlayer } = require('../../db/dbManager');
 const ApiError = require('../../utils/ApiError');
 
@@ -27,7 +28,14 @@ class ChessGameService{
         }
         return result;
     }
-    newGame(){
+    newGame(isAi = false){
+        console.log('NEW GAME:', isAi)
+        if(isAi){
+            console.log('THIS IS AN AI GAME')
+            setPlayer(this.gameId, 'black', 'ai');
+            let player = getPlayer(this.gameId, 'black');
+            console.log('Should be set to ai', player)
+        }
         return true;
     }
     //TODO:: should set players on first loads of game, White is always set by whoever loads in first, black thereafter.
@@ -103,7 +111,37 @@ class ChessGameService{
             console.log("CheckMate")
             this.CheckMate = true;
         }else{console.log('move was found.');}
+        //Check if AIs turn
+        console.log('Official Fen:', this.officialFen);
+        if(this.officialFen.split(' ')[1] ==='b'){
+            const player = getPlayer(this.gameId, 'black');
+            console.log('isBlacks turn- Player:', player);
+            //check if AI player
+            if(getPlayer(this.gameId, 'black') === 'ai'){
+                try{
+                    this.processAiMove();
+                }catch(error){
+                    console.log(error);
+                }
+            }
+        }
         return true;
+    }
+    async processAiMove(){
+        console.log('*****************START AI Turn*****************');
+        try{
+            const move = await getBestMove(this.officialFen);//get Ai move
+            //decode move
+            console.log('Move:', move);
+            const from = move.slice(0, 2);
+            const to = move.slice(2, 4); 
+            const promotionChar = move.length === 5 ? move[4] : '';
+            this.requestMove(from, to, promotionChar);
+            //TODO:: we want to return 2 fens not sure how yet.
+        }catch(error){console.log(error)}
+        
+        
+        console.log('*****************END AI Turn*****************');
     }
     saveFen(){
         //Save Fen back to database
