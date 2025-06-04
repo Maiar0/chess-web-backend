@@ -12,7 +12,7 @@ async function getBestMove(fen) {
   await engine.init();
   await engine.setoption('Threads', 1);
   await engine.position(fen);
-  const result = await engine.go({ depth: 12 });
+  const result = await engine.go({ depth: 4 });
   await engine.quit();
   return result.bestmove;
 }
