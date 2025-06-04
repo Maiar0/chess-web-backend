@@ -3,7 +3,7 @@ const MoveUtils = require('../utils/chess/MoveUtils');
 const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 
-exports.handle = (req, res) => {
+exports.handle = async (req, res) => {
     console.log('-----------------Recieved Request-----------------');
     const {action, gameId, payload, playerId} = req.body;
     console.log('(action:', action, ')(gameId:', gameId, ')(payload:', payload,')(playerId:', playerId,')');
@@ -13,16 +13,7 @@ exports.handle = (req, res) => {
         const {from, to, promoteTo, isAi} = payload;
         switch(action){
             case 'move':
-                if(svc.requestMove(from, to, promoteTo, playerId)){
-                    result = true;
-                }
-                break;
-            case 'promote'://TODO:: Remove
-                if(svc.requestPromotion(from, to, payload.promoteTo)){
-                    if(svc.endTurn()){
-                        result = true;
-                    }
-                }
+                result = await svc.requestMove(from, to, promoteTo, playerId)
                 break;
             case 'newGame':
                 if(svc.newGame(isAi)){

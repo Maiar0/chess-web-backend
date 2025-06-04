@@ -50,22 +50,23 @@ class ChessGameService{
         }
         return true;
     };
-    requestMove(from, to, promoteTo, playerId){// Request a move from the user
+    async requestMove(from, to, promoteTo, playerId){// Request a move from the user
         if(!this.isPlayersTurn(playerId)){
             throw new ApiError('Not your turn.', 403);
-        }else if(this.isAisTurn()){
+        }
 
-        };
         if(this.validateMove(from,to)){//Check if piece can move
             const piece = this.chessBoard.getPiece(from.x, from.y);
             if(this.chessBoard.move(from, to, promoteTo)){//move is completed
                 this.endTurn();//end turn
                 console.log('Move successful from', from, 'to', to, 'promoteTo', promoteTo);
             }
-        }else{
-            console.log('Invalid move from', from, 'to', to, '*************THIS SHOULD NOT PRINT*************');
-            return false; // Move is invalid
         }
+        if(this.isAisTurn()){
+            console.log('AI Turn');
+            await this.processAiMove(); // Process AI's turn if it's AI's turn
+        }
+        return true;
     }
     isPlayersTurn(playerId){
         const color = this.chessBoard.activeColor === 'w' ? 'white': 'black';
@@ -118,7 +119,7 @@ class ChessGameService{
     
         return true;
     }
-    endTurn(){
+    async endTurn(){
         //Full move counter
         if(this.chessBoard.activeColor === 'b') this.chessBoard.fullmove =  (parseInt(this.chessBoard.fullmove,10) + 1).toString();
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
@@ -128,30 +129,14 @@ class ChessGameService{
             console.log("CheckMate")
             this.CheckMate = true;
         }else{console.log('move was found.');}
-        
-        //Check if AIs turn
-        console.log('Official Fen:', this.officialFen);
-        if(this.officialFen.split(' ')[1] ==='b'){
-            //check if AI player
-            if(getPlayer(this.gameId, 'black') === 'ai'){
-                try{
-                    this.processAiMove();
-                    return true;
-                }catch(error){
-                    console.log(error);
-                }
-            }
-        }else{
-            return true; // Not AI's turn, just end the turn
-        }
-        return false;
     }
     async processAiMove(){
         console.log('*****************START AI Turn*****************');
         try{
-            const move = await getBestMove(this.officialFen);//get Ai move
-            //decode move
-            console.log('Move:', move);
+            //get Move from AI
+            const move = await getBestMove(this.officialFen);
+
+            //preapare move
             let from = move.slice(0, 2);
             let to = move.slice(2, 4); 
             const promotionChar = move.length === 5 ? move[4] : '';
@@ -159,8 +144,13 @@ class ChessGameService{
             to = FenUtils.fromAlgebraic(to);
             from = {x: parseInt(from[0], 10), y: parseInt(from[1], 10)};
             to = {x: parseInt(to[0], 10), y: parseInt(to[1], 10)};
-            this.requestMove(from, to, promotionChar);
-            //TODO:: we want to return 2 fens not sure how yet.
+
+            //move
+            this.chessBoard.move(from, to, promotionChar);
+
+            //end turn
+            this.endTurn();
+
         }catch(error){console.log(error)}
         
         
