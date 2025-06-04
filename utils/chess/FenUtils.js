@@ -1,4 +1,5 @@
 const ChessPieceFactory = require('../../domain/chess/pieces/ChessPieceFactory');
+const ApiError = require('../ApiError');
 class FenUtils{
     static parseFen(fen){
         const board = Array.from({ length: 8 }, () => Array(8).fill(null));
@@ -62,7 +63,7 @@ class FenUtils{
         let pieces = [];
         for(let i = 0; i < capturedStr.length; ++i){
             const piece = ChessPieceFactory.createPiece(capturedStr[i]);
-            if(!piece) throw new Error("Invalide capture Piece: " + capturedStr[i]);
+            if(!piece) throw new ApiError("Invalide capture Piece: " + capturedStr[i], 400);
             pieces.push(piece);
             
         }
@@ -81,8 +82,8 @@ class FenUtils{
     }
 
     static toAlgebraic(pos) {//convert to readable format
-        const x = parseInt(pos[0], 10);   //  "0" → 0
-        const y = parseInt(pos[1], 10);   //  "5" → 5
+        const x = parseInt(pos[0], 10);   
+        const y = parseInt(pos[1], 10);   
         const letter = String.fromCharCode(97 + x);
         const number = String(y + 1);              
         return letter + number;
@@ -97,7 +98,7 @@ class FenUtils{
         const number = coord[1];
         const x = letter.charCodeAt(0) - 97;
         const y = parseInt(number, 10) -1;
-        if(!this.boundsCheck(x,y)) throw new Error("from Algebraic: pos not in bounds");
+        if(!this.boundsCheck(x,y)) throw new ApiError("from Algebraic: pos not in bounds", 400);
         return x.toString()+ y.toString();
     }
 

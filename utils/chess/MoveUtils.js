@@ -19,7 +19,7 @@ class MoveUtils{
         const dummyBoard = new ChessBoard(fen);
         const pieces = dummyBoard.getPieces(dummyBoard.activeColor === 'w' ? 'white': 'black');//get all pieces to test
         const king = pieces.find(p => p.constructor.name === 'King');//get King
-        if(!king) throw new Error('No king found on board.');
+        if(!king) throw new ApiError('No king found on board.', 400);
         if (king.getMoves(dummyBoard).length > 0) return false;
         for(let i = 0; i < pieces.length; ++i){
             const piece = pieces[i];

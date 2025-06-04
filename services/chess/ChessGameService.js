@@ -29,12 +29,10 @@ class ChessGameService{
         return result;
     }
     newGame(isAi = false){
-        console.log('NEW GAME:', isAi)
         if(isAi){
-            console.log('THIS IS AN AI GAME')
             setPlayer(this.gameId, 'black', 'ai');
             let player = getPlayer(this.gameId, 'black');
-            console.log('Should be set to ai', player)
+            console.log('Black Player:', player)
         }
         return true;
     }
@@ -45,7 +43,6 @@ class ChessGameService{
         const currentPlayer = getPlayer(this.gameId, color)
         const opponentPlayer = getPlayer(this.gameId, opponentColor)
         if(!currentPlayer && playerId !== opponentPlayer){
-            console.log('SetPlayer')
             setPlayer(this.gameId, color, playerId);
         }else{
             //TODO:: do nothing?
@@ -54,10 +51,17 @@ class ChessGameService{
         return true;
     };
     requestMove(from, to, promoteTo, playerId){// Request a move from the user
-        if(!this.isPlayersTurn(playerId)) throw new ApiError('Not your turn.', 403);
+        if(!this.isPlayersTurn(playerId)){
+            throw new ApiError('Not your turn.', 403);
+        }else if(this.isAisTurn()){
+
+        };
         if(this.validateMove(from,to)){//Check if piece can move
             const piece = this.chessBoard.getPiece(from.x, from.y);
-            return this.chessBoard.move(from, to, promoteTo);
+            if(this.chessBoard.move(from, to, promoteTo)){//move is completed
+                this.endTurn();//end turn
+                console.log('Move successful from', from, 'to', to, 'promoteTo', promoteTo);
+            }
         }else{
             console.log('Invalid move from', from, 'to', to, '*************THIS SHOULD NOT PRINT*************');
             return false; // Move is invalid
@@ -68,11 +72,24 @@ class ChessGameService{
         const currentPlayer = getPlayer(this.gameId, color)
         if(playerId === currentPlayer){
             console.log('***Player can Move***');
+            return true; // Player is allowed to make a move 
         }else{
+            if(this.isAisTurn()){
+                console.log('***AI can Move***');
+                return true; // AI is allowed to make a move
+            }
             //TODO:: to enable multiplayer, throw here.
             console.log('***Not Players turn***');
+            return false; // Player is not allowed to make a move
         }
-        return true;
+    }
+    isAisTurn(){
+        if(this.officialFen.split(' ')[1] ==='b'){
+            if(getPlayer(this.gameId, 'black') === 'ai'){
+                return true; // AI's turn
+            }
+        }
+        return false; // Not AI's turn
     }
     requestPromotion(from, to, promoteTo){// Request a promotion from the user
         this.chessBoard.promotePiece(from, to, promoteTo);//Lets promote
@@ -111,21 +128,23 @@ class ChessGameService{
             console.log("CheckMate")
             this.CheckMate = true;
         }else{console.log('move was found.');}
+        
         //Check if AIs turn
         console.log('Official Fen:', this.officialFen);
         if(this.officialFen.split(' ')[1] ==='b'){
-            const player = getPlayer(this.gameId, 'black');
-            console.log('isBlacks turn- Player:', player);
             //check if AI player
             if(getPlayer(this.gameId, 'black') === 'ai'){
                 try{
                     this.processAiMove();
+                    return true;
                 }catch(error){
                     console.log(error);
                 }
             }
+        }else{
+            return true; // Not AI's turn, just end the turn
         }
-        return true;
+        return false;
     }
     async processAiMove(){
         console.log('*****************START AI Turn*****************');
@@ -133,9 +152,13 @@ class ChessGameService{
             const move = await getBestMove(this.officialFen);//get Ai move
             //decode move
             console.log('Move:', move);
-            const from = move.slice(0, 2);
-            const to = move.slice(2, 4); 
+            let from = move.slice(0, 2);
+            let to = move.slice(2, 4); 
             const promotionChar = move.length === 5 ? move[4] : '';
+            from = FenUtils.fromAlgebraic(from);
+            to = FenUtils.fromAlgebraic(to);
+            from = {x: parseInt(from[0], 10), y: parseInt(from[1], 10)};
+            to = {x: parseInt(to[0], 10), y: parseInt(to[1], 10)};
             this.requestMove(from, to, promotionChar);
             //TODO:: we want to return 2 fens not sure how yet.
         }catch(error){console.log(error)}

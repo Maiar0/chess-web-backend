@@ -14,10 +14,7 @@ exports.handle = (req, res) => {
         switch(action){
             case 'move':
                 if(svc.requestMove(from, to, promoteTo, playerId)){
-                    console.log('Move successful from', from, 'to', to, 'promoteTo', promoteTo);
-                    if(svc.endTurn()){
-                        result = true;
-                    }
+                    result = true;
                 }
                 break;
             case 'promote'://TODO:: Remove
@@ -29,7 +26,7 @@ exports.handle = (req, res) => {
                 break;
             case 'newGame':
                 if(svc.newGame(isAi)){
-                    console.log('-----------------New game started---------------');
+                    console.log('-----------------New game started',isAi, '---------------');
                     result = true;
                 }
                 break;
