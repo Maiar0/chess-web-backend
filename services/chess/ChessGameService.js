@@ -92,10 +92,6 @@ class ChessGameService{
         }
         return false; // Not AI's turn
     }
-    requestPromotion(from, to, promoteTo){// Request a promotion from the user
-        this.chessBoard.promotePiece(from, to, promoteTo);//Lets promote
-        return true;
-    }//TOOD:: Remove
             
     validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
         let piece = this.chessBoard.getPiece(from.x,from.y);
