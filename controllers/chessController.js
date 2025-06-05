@@ -4,6 +4,7 @@ const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 
 exports.handle = async (req, res) => {
+    const { io } = require('./chessSocketController');
     console.log('-----------------Recieved Request-----------------');
     const {action, gameId, payload, playerId} = req.body;
     console.log('(action:', action, ')(gameId:', gameId, ')(payload:', payload,')(playerId:', playerId,')');
@@ -13,7 +14,16 @@ exports.handle = async (req, res) => {
         const {from, to, promoteTo, isAi} = payload;
         switch(action){
             case 'move':
-                result = await svc.requestMove(from, to, promoteTo, playerId)
+                result = await svc.requestMove(from, to, promoteTo, playerId); 
+                let state = {
+                    fen: svc.officialFen, // Get the FEN string from the chess board
+                    gameId: svc.gameId, // Get the game ID
+                    activeColor: svc.chessBoard.activeColor, // Get the active color (turn)
+                    inCheck: MoveUtils.isKingInCheck(svc.officialFen), // Check if the active color is in check
+                    capturedString: svc.capturedString, // Get the captured pieces
+                    checkMate: svc.CheckMate // Check if the game is in checkmate
+                };
+                io.to(gameId).emit('gameState', state); // Emit the game state to all connected clients in the room
                 break;
             case 'newGame':
                 if(svc.newGame(isAi)){

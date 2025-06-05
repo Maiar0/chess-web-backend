@@ -17,7 +17,7 @@ class ChessGameService{
         this.capturedString = getGameCaptures(gameId);
         this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
         this.chessBoard = new ChessBoard(this.officialFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
-        this.CheckMate = null;
+        this.CheckMate = false; //TODO:: this is a problem
     }
     createGameId(){// Generate a random game ID
         console.log('creating game')
@@ -63,7 +63,6 @@ class ChessGameService{
             }
         }
         if(this.isAisTurn()){
-            console.log('AI Turn');
             await this.processAiMove(); // Process AI's turn if it's AI's turn
         }
         return true;

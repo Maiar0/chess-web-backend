@@ -4,6 +4,7 @@ const cors = require('cors');
 //websocket support
 const http = require('http');
 const { Server } = require('socket.io');
+const { initializeSocketHandlers } = require('./controllers/chessSocketController.js');
 
 const app = express();
 
@@ -21,9 +22,7 @@ app.use('/api/chess', chessRoutes); // Use the chess routes for API calls
 const httpServer = http.createServer(app);
 //init socket on the HTTP server
 const io = new Server(httpServer, { cors: { origin: '*' } });
-const initializeSocketHandlers = require('./controllers/chessSocketController.js');
 initializeSocketHandlers(io);
-
 
 // Start the HTTP server (instead of app.listen)
 const PORT = process.env.PORT || 5000;
