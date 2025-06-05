@@ -157,7 +157,7 @@ class ChessGameService{
         this.officialFen = this.chessBoard.createFen(); //update fen in service
         if(setGameFen(this.gameId, this.officialFen)){result = true;}else{result =false;}
         if(setGameCaptures(this.gameId, this.capturedString)){result = true;}else{result = false;}
-        return ; // Save the current FEN string to the database
+        return result; // Save the current FEN string to the database
     }
 }
 module.exports = ChessGameService;

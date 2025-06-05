@@ -56,14 +56,18 @@ function getGameFen(gameId) {
     if (!row) throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 404);
     return row.fen; // Return the FEN string from the database
 }
-function setGameFen(gameId, fen) {
+function setGameFen(gameId, fen) {//TODO:: Test
     const db = getGameDB(gameId);
     if (!db){
         return null; // If the database does not exist, return null
     }
 
-    // Assumes you have a table `game_state(id INTEGER PRIMARY KEY, fen TEXT, ...)`
-    const stmt = db.prepare('UPDATE game_state SET fen = ? WHERE id = ?');
+    // Assumes a table `game_state(id INTEGER PRIMARY KEY, fen TEXT, ...)`
+    const stmt = db.prepare(`
+        UPDATE game_state
+        SET fen = ?, lastMove('now')
+        WHERE id = ?
+        `);
     const info = stmt.run(fen, 1); // or use whatever your row-id is
     db.close();
     if (info.changes === 0) {
