@@ -141,6 +141,19 @@ function setPlayer(gameId, color, playerId) {
     return true;
 }
 
+function getLastMoveTime(gameId) {
+    const db = getGameDB(gameId);
+    if (!db) return null;
+
+    const stmt = db.prepare('SELECT lastMove FROM game_state WHERE id = ?');
+    const row = stmt.get(1);
+
+    db.close();
+
+    if (!row) throw new ApiError('No rows found. Check if the game ID is correct.', 404);
+    return row.lastMove; // ISO 8601 string
+}
+
 
 module.exports = {
     createGameDB,
@@ -151,5 +164,6 @@ module.exports = {
     setGameCaptures,
     getGameCaptures,
     getPlayer,
-    setPlayer
+    setPlayer,
+    getLastMoveTime
 };

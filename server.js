@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const cron = require('node-cron');
+const cleanUpDbs = require('./chessDbCleanup');
 
 //websocket support
 const http = require('http');
@@ -29,6 +31,16 @@ const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`HTTP + Socket.IO server listening on port ${PORT}`);
 });
+
+//db cleanup
+cron.schedule('0 0 * * *', async () => {
+  try {
+    await cleanUpDbs();
+  } catch (err) {
+    console.error("Daily task failed:", err);
+  }
+});
+
 
 /*const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
