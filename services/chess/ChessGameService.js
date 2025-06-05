@@ -123,6 +123,17 @@ class ChessGameService{
         if(MoveUtils.simulationKingCheckMate(this.officialFen)){
             console.log("CheckMate")
             this.CheckMate = true;
+            let pieces = this.chessBoard.getPieces(this.chessBoard.activeColor === 'w' ? 'white' : 'black');
+            for(let i = 0; i < pieces.length; ++i){
+                let p = pieces[i];
+                if(p.constructor.name === 'King'){
+                    let kPos = p.position;
+                    console.log('Capture King:', p);
+                    p.position = null; 
+                    this.chessBoard.capturedPieces.push(p);//TODO:: Test
+                    this.saveFen();//finalize in DB before return we can also use this as a trigger instead of sending checkMate
+                }
+            }
         }else{console.log('move was found.');}
     }
     async processAiMove(){
