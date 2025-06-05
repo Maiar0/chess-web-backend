@@ -6,7 +6,8 @@ const {createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures, g
 const ApiError = require('../../utils/ApiError');
 
 class ChessGameService{
-    constructor(gameId){
+    constructor(gameId, log){
+        this.log = log;//logging instance
         if(gameId === undefined || gameId === null || gameId === '') {
             this.gameId = this.createGameId();
             createGameDB(this.gameId);
