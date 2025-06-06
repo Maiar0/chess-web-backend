@@ -45,10 +45,10 @@ exports.handle = async (req, res) => {
         let responseEnvelope = null; // Initialize the response envelope
         if(result){
             responseEnvelope = ApiResponse.successResponse(//TODO:: we should grab data from database?
-                svc.officialFen, // Get the FEN string from the chess board
+                svc.chessBoard.fen, // Get the FEN string from the chess board
                 svc.gameId, // Get the game ID
                 svc.chessBoard.activeColor, // Get the active color (turn)
-                MoveUtils.isKingInCheck(svc.officialFen), // Check if the active color is in check
+                MoveUtils.isKingInCheck(svc.chessBoard.fen), // Check if the active color is in check
                 svc.capturedString,// Get the captured pieces
                 svc.CheckMate
             );
@@ -68,10 +68,10 @@ exports.handle = async (req, res) => {
 //gets current game state
 function getState(svc){
     return state = {
-                    fen: svc.officialFen, // Get the FEN string from the gameservice
+                    fen: svc.chessBoard.fen, // Get the FEN string from the gameservice
                     gameId: svc.gameId, // Get the game ID
                     activeColor: svc.chessBoard.activeColor, // Get the active color (turn)
-                    inCheck: MoveUtils.isKingInCheck(svc.officialFen), // Check if the active color is in check
+                    inCheck: MoveUtils.isKingInCheck(svc.chessBoard.fen), // Check if the active color is in check
                     capturedString: svc.capturedString, // Get the captured pieces
                     checkMate: svc.CheckMate // Check if the game is in checkmate
                 };

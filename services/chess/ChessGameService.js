@@ -15,8 +15,8 @@ class ChessGameService{
             this.gameId = gameId;
         }
         this.capturedString = getGameCaptures(gameId);
-        this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
-        this.chessBoard = new ChessBoard(this.officialFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
+        this.serviceFen = getGameFen(this.gameId); // Get the FEN string from the database
+        this.chessBoard = new ChessBoard(this.serviceFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
         this.CheckMate = false; //TODO:: this is a problem
     }
     createGameId(){// Generate a random game ID
@@ -84,7 +84,7 @@ class ChessGameService{
         }
     }
     isAisTurn(){
-        if(this.officialFen.split(' ')[1] ==='b'){
+        if(this.chessBoard.fen.split(' ')[1] ==='b'){
             if(getPlayer(this.gameId, 'black') === 'ai'){
                 return true; // AI's turn
             }
@@ -101,10 +101,10 @@ class ChessGameService{
         if(piece.color.charAt(0).toLowerCase() !== this.chessBoard.activeColor.charAt(0).toLowerCase()) // Check if the piece is the correct color
             {throw new ApiError("validateMove: Invalid piece color", 403);}; 
 
-        if(MoveUtils.simulationKingCheck(this.officialFen,from, to)){//TODO:: Set better error messages
+        if(MoveUtils.simulationKingCheck(this.chessBoard.fen ,from, to)){//TODO:: Set better error messages
             throw new ApiError('King is in Check.', 403);
         }
-        if(MoveUtils.castlingPossible(this.officialFen, from, to)){
+        if(MoveUtils.castlingPossible(this.chessBoard.fen , from, to)){
             return true;//we shouldnt check isValidMove, it is not a valid normal move.
         }
         if(!MoveUtils.isValidMove(board, piece, to)) {
@@ -120,7 +120,7 @@ class ChessGameService{
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
         this.capturedString = FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces);
         this.saveFen(); // Save the current FEN string to the database
-        if(MoveUtils.simulationKingCheckMate(this.officialFen)){
+        if(MoveUtils.simulationKingCheckMate(this.chessBoard.fen)){
             console.log("CheckMate")
             this.CheckMate = true;
             let pieces = this.chessBoard.getPieces(this.chessBoard.activeColor === 'w' ? 'white' : 'black');
@@ -140,7 +140,7 @@ class ChessGameService{
     async processAiMove(){
         console.log('*****************START AI Turn*****************');
         //get Move from AI
-        const move = await getBestMove(this.officialFen);
+        const move = await getBestMove(this.chessBoard.fen);
 
         //preapare move
         let from = move.slice(0, 2);
@@ -161,8 +161,8 @@ class ChessGameService{
     saveFen(){
         //Save Fen back to database
         let result = false;
-        this.officialFen = this.chessBoard.createFen(); //update fen in service
-        if(setGameFen(this.gameId, this.officialFen)){result = true;}else{result =false;}
+        this.chessBoard.fen = this.chessBoard.createFen(); //update fen in service
+        if(setGameFen(this.gameId, this.chessBoard.fen)){result = true;}else{result =false;}
         if(setGameCaptures(this.gameId, this.capturedString)){result = true;}else{result = false;}
         return result; // Save the current FEN string to the database
     }
