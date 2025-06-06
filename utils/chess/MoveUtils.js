@@ -1,5 +1,6 @@
 const ChessBoard = require('../../domain/chess/board/ChessBoard.js');
 const ApiError = require('../ApiError.js');
+const { logOneOff } = require('./path/to/logOneOff');
 
 class MoveUtils{
     //simulates a move and returns if King is in CHECK
@@ -16,6 +17,7 @@ class MoveUtils{
     }
     //Checks if provided fen king is in check mate and returns result
     static simulationKingCheckMate(fen){
+        logOneOff('simulationKingCheckMate', `Checking if king is in checkmate for FEN: ${fen}`);
         const dummyBoard = new ChessBoard(fen);
         const pieces = dummyBoard.getPieces(dummyBoard.activeColor === 'w' ? 'white': 'black');//get all pieces to test
         const king = pieces.find(p => p.constructor.name === 'King');//get King

@@ -37,22 +37,19 @@ module.exports = async function cleanUpDbs() {
     if(!file.endsWith('.db')) continue;
 
     const gameId = path.basename(file, '.db');
-    try{
-        const fen = getGameFen(gameId);
-        const lastMove = getLastMoveTime(gameId);
-        if(isGameStale(fen, lastMove) ){
-            deleteGameDB(gameId);
-            console.log(`Deleted Stale game: ${file}`);
-        }else if(isOld(lastMove)){
-            deleteGameDB(gameId);
-            console.log(`Deleted Old game: ${file}`);
-        }else if(isGameOver(fen)){
-            deleteGameDB(gameId);
-            console.log(`Deleted Over game: ${file}`);
-        }
-    }catch(err){
-        console.error(`Error inspecting ${file}:`, err.message);
-    }
+      const fen = getGameFen(gameId);
+      const lastMove = getLastMoveTime(gameId);
+      if(isGameStale(fen, lastMove) ){
+          deleteGameDB(gameId);
+          console.log(`Deleted Stale game: ${file}`);
+      }else if(isOld(lastMove)){
+          deleteGameDB(gameId);
+          console.log(`Deleted Old game: ${file}`);
+      }else if(isGameOver(fen)){
+          deleteGameDB(gameId);
+          console.log(`Deleted Over game: ${file}`);
+      }
+      console.error(`Error inspecting ${file}:`, err.message);
   }
 };
 

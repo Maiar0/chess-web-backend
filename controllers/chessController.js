@@ -57,9 +57,9 @@ exports.handle = async (req, res) => {
         }
         return res.json(responseEnvelope); // Return the response envelope as JSON
     }catch (err) {
-        log.addEvent('error' + err);
         const status = err.status || 500;
         res.status(status).json(ApiResponse.error(err.message, status));
+        log.addEvent('Error:' + err);
     } finally{
         log.writeToFile();
     }

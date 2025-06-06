@@ -129,6 +129,7 @@ class ChessGameService{
                     let kPos = p.position;
                     this.log.addEvent('Capture King:' + JSON.stringify(p));
                     p.position = null; 
+                    this.chessBoard.board[kPos.x][kPos.y] = null; // Remove the king from the board
                     this.chessBoard.capturedPieces.push(p);//TODO:: Test
                     this.saveFen();//finalize in DB before return we can also use this as a trigger instead of sending checkMate
                 }
@@ -137,23 +138,21 @@ class ChessGameService{
     }
     async processAiMove(){
         console.log('*****************START AI Turn*****************');
-        try{
-            //get Move from AI
-            const move = await getBestMove(this.officialFen);
+        //get Move from AI
+        const move = await getBestMove(this.officialFen);
 
-            //preapare move
-            let from = move.slice(0, 2);
-            let to = move.slice(2, 4); 
-            const promotionChar = move.length === 5 ? move[4] : '';
-            from = FenUtils.fromAlgebraic(from);
-            to = FenUtils.fromAlgebraic(to);
-            from = {x: parseInt(from[0], 10), y: parseInt(from[1], 10)};
-            to = {x: parseInt(to[0], 10), y: parseInt(to[1], 10)};
+        //preapare move
+        let from = move.slice(0, 2);
+        let to = move.slice(2, 4); 
+        const promotionChar = move.length === 5 ? move[4] : '';
+        from = FenUtils.fromAlgebraic(from);
+        to = FenUtils.fromAlgebraic(to);
+        from = {x: parseInt(from[0], 10), y: parseInt(from[1], 10)};
+        to = {x: parseInt(to[0], 10), y: parseInt(to[1], 10)};
 
-            //move
-            this.requestMove(from, to, promotionChar);
+        //move
+        this.requestMove(from, to, promotionChar);
 
-        }catch(error){console.log(error)}
         
         
         console.log('*****************END AI Turn*****************');
