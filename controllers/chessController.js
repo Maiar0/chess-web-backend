@@ -16,14 +16,14 @@ exports.handle = async (req, res) => {
         let result = false;
         const {from, to, promoteTo, isAi} = payload;
         
-        log.addEvent('Request received' + JSON.stringify(updateState(svc)));
+        log.addEvent('Request received' + JSON.stringify(getState(svc)));
 
         switch(action){
             case 'move':
                 result = await svc.requestMove(from, to, promoteTo, playerId); 
                 const state = getState(svc); // get the game state after the move
                 io.to(gameId).emit('gameState', state); // Emit the game state to all connected clients in the room
-                log.addEvent('Completed Move State:' + JSON.stringify(state));
+                log.addEvent('Response State:' + JSON.stringify(state));
                 break;
             case 'newGame':
                 if(svc.newGame(isAi)){
@@ -34,6 +34,7 @@ exports.handle = async (req, res) => {
             case 'info':
             if(svc.infoGame(playerId)){
                 console.log('-----------------Game info requested', gameId,'---------------------');
+                log.addEvent('Info Request State:' + JSON.stringify(getState(svc)));
                 result = true;
             }
                 break;

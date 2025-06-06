@@ -7,21 +7,20 @@ const ApiError = require('../../utils/ApiError');
 
 class ChessGameService{
     constructor(gameId, log){
-        this.log = log;//logging instance
+        this.log = log; // Initialize the log session
         if(gameId === undefined || gameId === null || gameId === '') {
             this.gameId = this.createGameId();
             createGameDB(this.gameId);
         }else{
             this.gameId = gameId;
         }
-        console.log("gameId:", this.gameId)
         this.capturedString = getGameCaptures(gameId);
         this.officialFen = getGameFen(this.gameId); // Get the FEN string from the database
         this.chessBoard = new ChessBoard(this.officialFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
         this.CheckMate = false; //TODO:: this is a problem
     }
     createGameId(){// Generate a random game ID
-        console.log('creating game')
+        this.log.addEvent('creating game')
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
         for (let i = 0; i < 9; i++) {
@@ -33,7 +32,7 @@ class ChessGameService{
         if(isAi){
             setPlayer(this.gameId, 'black', 'ai');
             let player = getPlayer(this.gameId, 'black');
-            console.log('Black Player:', player)
+            this.log.addEvent('This is AI Game');
         }
         return true;
     }
@@ -60,7 +59,7 @@ class ChessGameService{
             const piece = this.chessBoard.getPiece(from.x, from.y);
             if(this.chessBoard.move(from, to, promoteTo)){//move is completed
                 this.endTurn();//end turn
-                console.log('Move successful from', from, 'to', to, 'promoteTo', promoteTo);
+                this.log.addEvent('Move successful From:' + JSON.stringify(from) +'To:' +  JSON.stringify(to) + 'promoteChar:' + JSON.stringify(promoteTo));
             }
         }
         if(this.isAisTurn()){
@@ -106,7 +105,6 @@ class ChessGameService{
             throw new ApiError('King is in Check.', 403);
         }
         if(MoveUtils.castlingPossible(this.officialFen, from, to)){
-            console.log('Castling move from', from, 'to', to);
             return true;//we shouldnt check isValidMove, it is not a valid normal move.
         }
         if(!MoveUtils.isValidMove(board, piece, to)) {
@@ -129,13 +127,13 @@ class ChessGameService{
                 let p = pieces[i];
                 if(p.constructor.name === 'King'){
                     let kPos = p.position;
-                    console.log('Capture King:', p);
+                    this.log.addEvent('Capture King:' + JSON.stringify(p));
                     p.position = null; 
                     this.chessBoard.capturedPieces.push(p);//TODO:: Test
                     this.saveFen();//finalize in DB before return we can also use this as a trigger instead of sending checkMate
                 }
             }
-        }else{console.log('move was found.');}
+        }
     }
     async processAiMove(){
         console.log('*****************START AI Turn*****************');
@@ -153,10 +151,7 @@ class ChessGameService{
             to = {x: parseInt(to[0], 10), y: parseInt(to[1], 10)};
 
             //move
-            this.chessBoard.move(from, to, promotionChar);
-
-            //end turn
-            this.endTurn();
+            this.requestMove(from, to, promotionChar);
 
         }catch(error){console.log(error)}
         
