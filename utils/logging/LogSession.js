@@ -3,7 +3,7 @@ const path = require('path');
 
 class LogSession {
   constructor(id,context = {}) {
-    this.context = context; // e.g., { gameId, playerId }
+    this.context = context; 
     this.events = [];
     this.id = id;
   }
@@ -18,7 +18,7 @@ class LogSession {
   writeToFile(logDir = path.join(__dirname, '../../logs')) {
     if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
-    const fileName = `${new Date().toISOString().slice(0, 10)}.txt`; // e.g., 2025-06-05.txt
+    const fileName = `${new Date().toISOString().slice(0, 10)}.txt`; 
     const fullPath = path.join(logDir, fileName);
 
     const data = this.events.map(e => e + '\n').join('');

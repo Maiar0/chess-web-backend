@@ -63,7 +63,7 @@ class FenUtils{
         let pieces = [];
         for(let i = 0; i < capturedStr.length; ++i){
             const piece = ChessPieceFactory.createPiece(capturedStr[i]);
-            if(!piece) throw new ApiError("Invalide capture Piece: " + capturedStr[i], 400);
+            if(!piece) throw new ApiError("Invalid capture Piece: " + capturedStr[i], 400);
             pieces.push(piece);
             
         }
@@ -98,7 +98,7 @@ class FenUtils{
         const number = coord[1];
         const x = letter.charCodeAt(0) - 97;
         const y = parseInt(number, 10) -1;
-        if(!this.boundsCheck(x,y)) throw new ApiError("from Algebraic: pos not in bounds", 400);
+        if(!this.boundsCheck(x,y)) throw new ApiError("pos not in bounds", 400);
         return x.toString()+ y.toString();
     }
 
