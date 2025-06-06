@@ -4,32 +4,26 @@ const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 const LogSession = require('../utils/logging/LogSession');
 
+
+
 exports.handle = async (req, res) => {
     const { io } = require('./chessSocketController');
     console.log('-----------------Recieved Request-----------------');
     const {action, gameId, payload, playerId} = req.body;
-    const log = new LogSession(gameId,{ gameId: gameId, playerId: playerId });
-    console.log('(action:', action, ')(gameId:', gameId, ')(payload:', payload,')(playerId:', playerId,')');
+    const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
     try{
         let result = false;
         const {from, to, promoteTo, isAi} = payload;
-        log.addEvent('Request received', { action: action, move: {from, to}, promoteTo: promoteTo, isAi: isAi });
+        
+        log.addEvent('Request received' + JSON.stringify(updateState(svc)));
 
         switch(action){
             case 'move':
                 result = await svc.requestMove(from, to, promoteTo, playerId); 
-                let state = {
-                    fen: svc.officialFen, // Get the FEN string from the chess board
-                    gameId: svc.gameId, // Get the game ID
-                    activeColor: svc.chessBoard.activeColor, // Get the active color (turn)
-                    inCheck: MoveUtils.isKingInCheck(svc.officialFen), // Check if the active color is in check
-                    capturedString: svc.capturedString, // Get the captured pieces
-                    checkMate: svc.CheckMate // Check if the game is in checkmate
-                };
+                const state = getState(svc); // get the game state after the move
                 io.to(gameId).emit('gameState', state); // Emit the game state to all connected clients in the room
-                log.addEvent('Completed Move State:', {endState: state})
-                log.setResult('Move applied successfully.');
+                log.addEvent('Completed Move State:' + JSON.stringify(state));
                 break;
             case 'newGame':
                 if(svc.newGame(isAi)){
@@ -62,10 +56,22 @@ exports.handle = async (req, res) => {
         }
         return res.json(responseEnvelope); // Return the response envelope as JSON
     }catch (err) {
-        log.addError(err);
+        log.addEvent('error' + err);
         const status = err.status || 500;
         res.status(status).json(ApiResponse.error(err.message, status));
     } finally{
         log.writeToFile();
     }
+}
+
+//gets current game state
+function getState(svc){
+    return state = {
+                    fen: svc.officialFen, // Get the FEN string from the gameservice
+                    gameId: svc.gameId, // Get the game ID
+                    activeColor: svc.chessBoard.activeColor, // Get the active color (turn)
+                    inCheck: MoveUtils.isKingInCheck(svc.officialFen), // Check if the active color is in check
+                    capturedString: svc.capturedString, // Get the captured pieces
+                    checkMate: svc.CheckMate // Check if the game is in checkmate
+                };
 }

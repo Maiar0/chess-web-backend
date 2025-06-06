@@ -65,7 +65,8 @@ function setGameFen(gameId, fen) {//TODO:: Test
     // Assumes a table `game_state(id INTEGER PRIMARY KEY, fen TEXT, ...)`
     const stmt = db.prepare(`
         UPDATE game_state
-        SET fen = ?, lastMove('now')
+        SET fen = ?, 
+        lastMove = datetime('now')
         WHERE id = ?
         `);
     const info = stmt.run(fen, 1); // or use whatever your row-id is

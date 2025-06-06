@@ -1,41 +1,29 @@
+const fs = require('fs');
+const path = require('path');
+
 class LogSession {
-  constructor(fileId, context = {}) {
-    this.timestamp = new Date().toISOString();
-    this.context = context;       // { gameId, playerId, ip, etc. }
-    this.events = [];             // chronological event stack
-    this.errors = [];             // caught errors, if any
-    this.result = null;           // outcome of the request
+  constructor(id,context = {}) {
+    this.context = context; // e.g., { gameId, playerId }
+    this.events = [];
+    this.id = id;
   }
 
-  addEvent(message, data = {}) {
-    this.events.push({
-      at: new Date().toISOString(),
-      message,
-      ...data
-    });
+  addEvent(message) {
+    const timestamp = new Date().toISOString();
+    const tag = this.context.gameId ? `[Game ${this.context.gameId}]` : '';
+    const entry = `${timestamp} ${this.id} ${message}`;
+    this.events.push(entry);
   }
 
-  addError(err) {
-    this.errors.push({
-      at: new Date().toISOString(),
-      message: err.message,
-      stack: err.stack
-    });
-  }
-
-  setResult(result) {
-    this.result = result;
-  }
-
-  writeToFile(logDir = './logs') {
-    const fs = require('fs');
-    const path = require('path');
-
+  writeToFile(logDir = path.join(__dirname, '../../logs')) {
     if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
-    const fileName = `log_${this.fileId}_${Date.now()}.json`;
+    const fileName = `${new Date().toISOString().slice(0, 10)}.txt`; // e.g., 2025-06-05.txt
     const fullPath = path.join(logDir, fileName);
 
-    fs.writeFileSync(fullPath, JSON.stringify(this, null, 2));
+    const data = this.events.map(e => e + '\n').join('');
+    fs.appendFileSync(fullPath, data, 'utf8');
   }
 }
+
+module.exports = LogSession;
