@@ -108,7 +108,8 @@ class ChessGameService{
             return true;//we shouldnt check isValidMove, it is not a valid normal move.
         }
         if(!MoveUtils.isValidMove(board, piece, to)) {
-            throw new ApiError("validateMove: Invalid move FROM = valid, TO = invalid", 403);
+            this.log.addEvent('ERROR : Invalid move FROM ' + JSON.stringify(from) + ' = valid, TO ' + JSON.stringify(to) + ' = invalid');
+            throw new ApiError('validateMove: Invalid move FROM = valid, TO = invalid', 403);
         }
     
         return true;

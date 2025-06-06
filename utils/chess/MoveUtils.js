@@ -1,6 +1,6 @@
 const ChessBoard = require('../../domain/chess/board/ChessBoard.js');
 const ApiError = require('../ApiError.js');
-const { logOneOff } = require('./path/to/logOneOff');
+const { logOneOff } = require('../logging/logOneOff');
 
 class MoveUtils{
     //simulates a move and returns if King is in CHECK
