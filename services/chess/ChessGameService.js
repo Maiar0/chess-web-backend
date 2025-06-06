@@ -118,7 +118,6 @@ class ChessGameService{
         //Full move counter
         if(this.chessBoard.activeColor === 'b') this.chessBoard.fullmove =  (parseInt(this.chessBoard.fullmove,10) + 1).toString();
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
-        this.capturedString = FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces);
         this.saveFen(); // Save the current FEN string to the database
         if(MoveUtils.simulationKingCheckMate(this.chessBoard.fen)){
             console.log("CheckMate")
@@ -159,12 +158,24 @@ class ChessGameService{
         console.log('*****************END AI Turn*****************');
     }
     saveFen(){
-        //Save Fen back to database
-        let result = false;
+        //generate and save fen
         this.chessBoard.fen = this.chessBoard.createFen(); //update fen in service
-        if(setGameFen(this.gameId, this.chessBoard.fen)){result = true;}else{result =false;}
-        if(setGameCaptures(this.gameId, this.capturedString)){result = true;}else{result = false;}
-        return result; // Save the current FEN string to the database
+        this.serviceFen = this.chessBoard.fen;
+        //set fen in DB
+        let result = false;
+        if(setGameFen(this.gameId, this.chessBoard.fen) === 1){
+            result = true;
+        }else{
+            return false;
+        }
+        //Set captured string in DB
+        if(setGameCaptures(this.gameId, FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces)) === 1){
+            result = true;
+        }else{
+            return false;
+        }
+
+        return result; // succesfully completed
     }
 }
 module.exports = ChessGameService;

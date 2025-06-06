@@ -396,24 +396,46 @@ describe('ChessGameService', () => {
       service = new ChessGameService(undefined, dummyLog);
     });
 
-    test('returns true when both setGameFen and setGameCaptures succeed', () => {
-      const result = service.saveFen();
-      expect(service.chessBoard.fen).toBe('updatedFen');
-      expect(setGameFen).toHaveBeenCalledWith(service.gameId, 'updatedFen');
-      expect(setGameCaptures).toHaveBeenCalledWith(service.gameId, 'capStr');
-      expect(result).toBe(true);
+    test('saveFen returns true when both DB updates return 1', () => {
+        // 1. Arrange: Mock ChessBoard and DB helpers
+        const fakeBoard = {
+            createFen: jest.fn().mockReturnValue('newFen'),
+            capturedPieces: [ /* ...some piece objects... */ ],
+        };
+        ChessBoard.mockImplementation(() => fakeBoard);
+
+        FenUtils.parseCapturedPiece.mockReturnValue('capsStr');
+        setGameFen.mockReturnValue(1);
+        setGameCaptures.mockReturnValue(1);
+
+        // 2. Construct service (constructor will call getGameFen/getGameCaptures)
+        const service = new ChessGameService(undefined, dummyLog);
+
+        // 3. Act: call saveFen
+        const result = service.saveFen();
+
+        // 4. Assert:
+        expect(fakeBoard.createFen).toHaveBeenCalled();
+        expect(setGameFen).toHaveBeenCalledWith(service.gameId, 'newFen');
+        expect(FenUtils.parseCapturedPiece).toHaveBeenCalledWith(fakeBoard.capturedPieces);
+        expect(setGameCaptures).toHaveBeenCalledWith(service.gameId, 'capsStr');
+        expect(result).toBe(true);
     });
 
-    test('returns false if setGameFen fails', () => {
-      setGameFen.mockReturnValue(false);
-      const result = service.saveFen();
-      expect(result).toBe(false);
+    test('saveFen returns false when setGameFen does not return 1', () => {
+        setGameFen.mockReturnValue(0);
+        const result = service.saveFen();
+        expect(result).toBe(false);
+        // You can also assert that setGameCaptures was never called in this branch:
+        expect(setGameCaptures).not.toHaveBeenCalled();
     });
 
-    test('returns false if setGameCaptures fails', () => {
-      setGameCaptures.mockReturnValue(false);
-      const result = service.saveFen();
-      expect(result).toBe(false);
+    test('saveFen returns false when setGameCaptures does not return 1', () => {
+        setGameFen.mockReturnValue(1);
+        setGameCaptures.mockReturnValue(0);
+        const result = service.saveFen();
+        expect(result).toBe(false);
     });
+
   });
 });
