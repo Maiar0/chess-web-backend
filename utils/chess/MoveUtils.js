@@ -5,14 +5,12 @@ const { logOneOff } = require('../logging/logOneOff');
 class MoveUtils{
     //simulates a move and returns if King is in CHECK
     static simulationKingCheck(fen, from, to){//TODO:: Create Error codes to explain why kingInCheck
-        console.log('*************START SIMULATION*************');
         const dummyBoard = new ChessBoard(fen);//fen
         let piece = dummyBoard.getPiece(from.x,from.y);//get piece at from
         dummyBoard.board[to.x][to.y] = piece;//move piece
         piece.position = {x: to.x, y: to.y};
         dummyBoard.board[from.x][from.y] = null;//clear last space
         dummyBoard.generateThreatMap(dummyBoard.activeColor === 'w' ? 'black': 'white');//generate map
-        console.log("*************STOP SIMULATION*************")
         return dummyBoard.kingInCheck;//return if king is in check?
     }
     //Checks if provided fen king is in check mate and returns result
@@ -30,11 +28,12 @@ class MoveUtils{
                 const to = moves[o];
                 const from = piece.position;
                 if(!this.simulationKingCheck(fen, from, to)){
-                    console.log("We found a move!", from, to);
+                    logOneOff("Not Check Mate:" + JSON.stringify(from) + JSON.stringify(to));
                     return false;//We have a move
                 }
             }
         }
+        logOneOff("Check Mate:" + JSON.stringify(king));
         return true;//CHECK MATE
     }
     

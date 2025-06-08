@@ -11,7 +11,7 @@ exports.handle = async (req, res) => {
     console.log('-----------------Recieved Request-----------------');
     const {action, gameId, payload, playerId} = req.body;
     const log = new LogSession(gameId);
-    const svc = new ChessGameService(gameId, log);
+    let svc = new ChessGameService(gameId, log);
     try{
         let result = false;
         const {from, to, promoteTo, isAi} = payload;
@@ -20,7 +20,11 @@ exports.handle = async (req, res) => {
 
         switch(action){
             case 'move':
-                result = await svc.requestMove(from, to, promoteTo, playerId); 
+                result = svc.requestMove(from, to, promoteTo, playerId); 
+                if(svc.isAisTurn()){
+                    svc = new ChessGameService(gameId, log); // Reinitialize to ensure fresh state for AI processing
+                    result = await svc.processAiMove(); // Process AI's turn if it's AI's turn
+                }
                 const state = getState(svc); // get the game state after the move
                 io.to(gameId).emit('gameState', state); // Emit the game state to all connected clients in the room
                 log.addEvent('Response State:' + JSON.stringify(state));

@@ -284,31 +284,6 @@ describe('ChessGameService', () => {
     });
   });
 
-  describe('processAiMove', () => {
-    beforeEach(() => {
-      getGameCaptures.mockReturnValue('');
-      getGameFen.mockReturnValue('dummyFen w KQkq - 0 1');
-      // ChessBoard simulating a board where move() will be called
-      const fakePiece = { position: { x: 1, y: 0 } };
-      ChessBoard.mockImplementation(() => ({
-        activeColor: 'w',
-        board: [[null, fakePiece]],
-        capturedPieces: [],
-        fullmove: '1',
-        createFen: jest.fn().mockReturnValue('fenAfter'),
-        getPieces: jest.fn().mockReturnValue([]),
-        getPiece: jest.fn((x, y) => (x === 1 && y === 0 ? fakePiece : null)),
-        isThreatened: jest.fn().mockReturnValue(false),
-        move: jest.fn().mockReturnValue(true)
-      }));
-      // Mock StockFish to return "a2a3" (from="a2", to="a3")
-      getBestMove.mockResolvedValue('a2a3');
-      FenUtils.fromAlgebraic.mockReturnValue('01'); // "a2" -> "01"
-      service = new ChessGameService(undefined, dummyLog);
-    });
-
-  });
-
   describe('saveFen', () => {
     beforeEach(() => {
       getGameCaptures.mockReturnValue('');

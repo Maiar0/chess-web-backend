@@ -15,9 +15,9 @@ class ChessGameService{
             this.gameId = gameId;
         }
         this.capturedString = getGameCaptures(gameId);
-        this.serviceFen = getGameFen(this.gameId); // Get the FEN string from the database
-        this.chessBoard = new ChessBoard(this.serviceFen, {captures : this.capturedString}); // Create a new chess board using the FEN string
+        this.chessBoard = new ChessBoard(getGameFen(this.gameId), {captures : this.capturedString}); // Create a new chess board using the FEN string
         this.CheckMate = false; //TODO:: this is a problem
+        this.isAi = getPlayer(gameId, 'black') === 'ai'; // Flag to indicate if the game is against AI
     }
     createGameId(){// Generate a random game ID
         this.log.addEvent('creating game')
@@ -50,7 +50,7 @@ class ChessGameService{
         }
         return true;
     };
-    async requestMove(from, to, promoteTo, playerId){// Request a move from the user
+    requestMove(from, to, promoteTo, playerId){// Request a move from the user
         if(!this.isPlayersTurn(playerId)){
             throw new ApiError('Not your turn.', 403);
         }
@@ -61,9 +61,6 @@ class ChessGameService{
                 this.endTurn();//end turn
                 this.log.addEvent('Move successful From:' + JSON.stringify(from) +'To:' +  JSON.stringify(to) + 'promoteChar:' + JSON.stringify(promoteTo));
             }
-        }
-        if(this.isAisTurn()){
-            await this.processAiMove(); // Process AI's turn if it's AI's turn
         }
         return true;
     }
@@ -85,7 +82,7 @@ class ChessGameService{
     }
     isAisTurn(){
         if(this.chessBoard.fen.split(' ')[1] ==='b'){
-            if(getPlayer(this.gameId, 'black') === 'ai'){
+            if(this.isAi){
                 return true; // AI's turn
             }
         }
@@ -130,28 +127,33 @@ class ChessGameService{
                     this.log.addEvent('Capture King:' + JSON.stringify(p));
                     p.position = null; 
                     this.chessBoard.board[kPos.x][kPos.y] = null; // Remove the king from the board
-                    this.chessBoard.capturedPieces.push(p);//TODO:: Test
+                    this.chessBoard.capturedPieces.push(p);
                     this.saveFen();//finalize in DB before return we can also use this as a trigger instead of sending checkMate
                 }
             }
         }
     }
-    async processAiMove(){
+    async processAiMove(){//TODO:: there is something wrong with this, random validation errors
         console.log('*****************START AI Turn*****************');
-        //get Move from AI
-        const move = await getBestMove(this.chessBoard.fen);
+        try{
+            //get Move from AI
+            const move = await getBestMove(this.chessBoard.fen);
 
-        //preapare move
-        let from = move.slice(0, 2);
-        let to = move.slice(2, 4); 
-        const promotionChar = move.length === 5 ? move[4] : '';
-        from = FenUtils.fromAlgebraic(from);
-        to = FenUtils.fromAlgebraic(to);
-        from = {x: parseInt(from[0], 10), y: parseInt(from[1], 10)};
-        to = {x: parseInt(to[0], 10), y: parseInt(to[1], 10)};
+            //preapare move
+            let from = move.slice(0, 2);
+            let to = move.slice(2, 4); 
+            const promotionChar = move.length === 5 ? move[4] : '';
+            from = FenUtils.fromAlgebraic(from);
+            to = FenUtils.fromAlgebraic(to);
+            from = {x: parseInt(from[0], 10), y: parseInt(from[1], 10)};
+            to = {x: parseInt(to[0], 10), y: parseInt(to[1], 10)};
 
-        //move
-        this.requestMove(from, to, promotionChar);
+            //move
+            return this.requestMove(from, to, promotionChar);
+        }catch(err){
+            throw new ApiError('ERROR During AI move: ' + err.message, 500);
+        }
+        
 
         
         
@@ -160,7 +162,6 @@ class ChessGameService{
     saveFen(){
         //generate and save fen
         this.chessBoard.fen = this.chessBoard.createFen(); //update fen in service
-        this.serviceFen = this.chessBoard.fen;
         //set fen in DB
         let result = false;
         if(setGameFen(this.gameId, this.chessBoard.fen) === 1){

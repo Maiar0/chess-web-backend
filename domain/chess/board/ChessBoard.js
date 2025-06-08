@@ -54,7 +54,10 @@ class ChessBoard {
                 }
             }
         }
-
+        if(!king){
+            this.kingInCheck = true; // If no king found, set kingInCheck to true game is over
+            return this.threatMap; // If no king found, return the threat map
+        }
         if(this.isThreatened(king.position.x, king.position.y)){
             this.kingInCheck = true;
         }else{

@@ -4,10 +4,13 @@ const Database = require('better-sqlite3');
 const { get } = require('http');
 //TODO:: Typo
 const intialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // initial FEN string for chess
-const dbDir = path.join(__dirname, '..', 'games');// Directory to store game databases
-
-function getDBPath(gameId){
-    return path.join(dbDir, `${gameId}.db`);// Path to the game database
+let dbDir = path.join(__dirname, '..', 'games');// Directory to store game databases
+//so we can run tests
+function setDbDir(newDir) {
+  dbDir = newDir;
+}
+function getDBPath(gameId) {
+  return path.join(dbDir, `${gameId}.db`);
 }
 
 function createGameDB(gameId){
@@ -39,10 +42,20 @@ function getGameDB(gameId){
     if(!fs.existsSync(dbPath)) return null; // if database does not exist, return null
     return new Database(dbPath);
 }
-//Delete the game database if it exists
-function deleteGameDB(gameId){
-    const dbPath = getDBPath(gameId);// Get the path to the game database
-    if(fs.existsSync(dbPath)) fs.unlinkSync(dbPath); // if database exists, delete it
+function deleteGameDB(gameId) {
+  const dbPath = getDBPath(gameId);
+
+  // If the file exists, first try opening & closing a connection to release any lock.
+  if (fs.existsSync(dbPath)) {
+    try {
+      const tempDb = new Database(dbPath);
+      tempDb.close();
+    } catch (e) {
+      // ignore if opening fails
+    }
+    // now it’s safe (or at least as safe as we can be) to delete:
+    fs.unlinkSync(dbPath);
+  }
 }
 
 function getGameFen(gameId) {
@@ -161,6 +174,7 @@ function getLastMoveTime(gameId) {
 
 
 module.exports = {
+    setDbDir,
     createGameDB,
     getGameDB,
     deleteGameDB,

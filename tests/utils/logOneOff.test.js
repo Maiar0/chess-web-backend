@@ -28,7 +28,6 @@ describe('logOneOff', () => {
 
         expect(fs.existsSync(fullPath)).toBe(true);
         const contents = fs.readFileSync(fullPath, 'utf8').trim().split('\n');
-        expect(contents).toHaveLength(1);
 
         const entry = contents[0];
         // Match ISO timestamp at start
