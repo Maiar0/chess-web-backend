@@ -32,7 +32,7 @@ httpServer.listen(PORT, () => {
   console.log(`HTTP + Socket.IO server listening on port ${PORT}`);
 });
 
-//db cleanup
+/*db cleanup
 cron.schedule('0 0 * * *', async () => {
   try {
     await cleanUpDbs();
@@ -41,8 +41,9 @@ cron.schedule('0 0 * * *', async () => {
   }
 });
 
+*//*
 
-/*const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });*/
