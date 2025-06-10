@@ -18,6 +18,7 @@ class ChessGameService{
         this.chessBoard = new ChessBoard(getGameFen(this.gameId), {captures : this.capturedString}); // Create a new chess board using the FEN string
         this.CheckMate = false; //TODO:: this is a problem
         this.isAi = getPlayer(gameId, 'black') === 'ai'; // Flag to indicate if the game is against AI
+        this.status = ''; // Status of the game, can be used for additional information
     }
     createGameId(){// Generate a random game ID
         this.log.addEvent('creating game')
@@ -63,6 +64,17 @@ class ChessGameService{
             }
         }
         return true;
+    }
+    requestDraw(){
+        if(parseInt(this.chessBoard.fen.split(' ')[4], 10)  >= 50){
+            return true;
+        }else if(parseInt(this.chessBoard.fen.split(' ')[5]) >= 100){
+            return true;
+        }else{
+            //ask both parties if they want to agree to draw
+        }
+
+        return false;
     }
     isPlayersTurn(playerId){
         const color = this.chessBoard.activeColor === 'w' ? 'white': 'black';
@@ -131,6 +143,22 @@ class ChessGameService{
                     this.saveFen();//finalize in DB before return we can also use this as a trigger instead of sending checkMate
                 }
             }
+        }
+        this.status = this.evaluateStatus(); // Evaluate the status of the game
+    }
+    evaluateStatus(){
+        if(this.status !== '') return this.status;//Never override
+        const fen = this.chessBoard.fen;
+        const materialDraw = MoveUtils.evaluateMaterialsDraw(fen);
+        const stalemate = MoveUtils.evaluateStalemate(fen);
+        if(this.CheckMate){
+            return 'checkmate';
+        }else if(stalemate){
+            return 'stalemate';
+        }else if(materialDraw){
+            return 'materialdraw';
+        }else{
+            return 'Active';
         }
     }
     async processAiMove(){//TODO:: there is something wrong with this, random validation errors

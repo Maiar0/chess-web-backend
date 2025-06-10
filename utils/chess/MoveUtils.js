@@ -92,5 +92,40 @@ class MoveUtils{
         }
         return false;
     }
+    static evaluateStalemate(fen){
+        const dummyBoard = new ChessBoard(fen);
+        const pieces = dummyBoard.getPieces(dummyBoard.activeColor === 'w' ? 'white' : 'black');
+        for(let i = 0; i< pieces.length; ++i){
+            if(pieces[i].getMoves(dummyBoard).length != 0){
+                console.log('Stalemate FALSE');
+                return false;
+            }
+        }
+        console.log('Stalemate FALSE');
+        return true;//game is stalemate  
+    }
+    static evaluateMaterialsDraw(fen){
+        const parts = fen.split(' ');
+        if(parts[0].toLowerCase().includes('q') || parts[0].toLowerCase().includes('r') || parts[0].toLowerCase().includes('p') ){
+            return false;// Materials draw not avaible
+        }
+        const insufficientMaterialSets = [//possible draw piece conditions
+            "kK",   "kKN",  "kKn",
+            "kKB",  "kKb",  "kKBb",
+            "kKNN", "kKnn"
+        ];
+        const dummyBoard = new ChessBoard(fen);
+        const piecesStr = [//get our pieces
+        ...dummyBoard.getPieces('white'),
+        ...dummyBoard.getPieces('black')
+        ]
+        .map(piece => piece.getFen())
+        .join('');
+        //normalize
+        const sortedPieces   = piecesStr.split('').sort().join('')
+        const sortedSignatures = insufficientMaterialSets.map(sig => sig.split('').sort().join(''));
+        //return if materials compisiton is true
+        return sortedSignatures.includes(sortedPieces);
+    }
 }
 module.exports = MoveUtils;

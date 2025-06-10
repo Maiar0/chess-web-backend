@@ -54,7 +54,8 @@ exports.handle = async (req, res) => {
                 svc.chessBoard.activeColor, // Get the active color (turn)
                 MoveUtils.isKingInCheck(svc.chessBoard.fen), // Check if the active color is in check
                 svc.capturedString,// Get the captured pieces
-                svc.CheckMate
+                svc.CheckMate,
+                svc.status
             );
         }else{
             responseEnvelope = ApiResponse.error("Unkown Error", 400); // Return an error response if the move is invalid
@@ -77,6 +78,7 @@ function getState(svc){
                     activeColor: svc.chessBoard.activeColor, // Get the active color (turn)
                     inCheck: MoveUtils.isKingInCheck(svc.chessBoard.fen), // Check if the active color is in check
                     capturedString: svc.capturedString, // Get the captured pieces
-                    checkMate: svc.CheckMate // Check if the game is in checkmate
+                    checkMate: svc.CheckMate, // Check if the game is in checkmate
+                    status: svc.status, // Get the game status
                 };
 }
