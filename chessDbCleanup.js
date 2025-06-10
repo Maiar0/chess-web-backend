@@ -53,7 +53,7 @@ module.exports = async function cleanUpDbs() {
   }
 };
 
-if (require.main === module) {
+/*if (require.main === module) {
   // File is being run directly (via `node chessDbCleanup.js`)
   (async () => {
     try {
@@ -63,4 +63,4 @@ if (require.main === module) {
       process.exit(1);
     }
   })();
-}
+}*/

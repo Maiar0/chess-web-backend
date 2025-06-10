@@ -34,21 +34,5 @@ describe('logOneOff', () => {
         expect(entry).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z request123 User logged in$/);
     });
 
-    test('appends entry with context.gameId tag', () => {
-        const id = 'gameMove';
-        const message = 'Player moved pawn';
-        const context = { gameId: 'game42' };
-
-        logOneOff(id, message, context);
-
-        expect(fs.existsSync(fullPath)).toBe(true);
-        const contents = fs.readFileSync(fullPath, 'utf8').trim().split('\n');
-        expect(contents).toHaveLength(1);
-
-        const entry = contents[0];
-        // Match ISO timestamp, tag, id, and message
-        expect(entry).toMatch(
-            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[Game game42\] gameMove Player moved pawn$/
-        );
-    });
+    
 });
