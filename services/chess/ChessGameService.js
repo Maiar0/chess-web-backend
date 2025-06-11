@@ -60,6 +60,7 @@ class ChessGameService{
         const otherColor = color === 'white' ? 'black' : 'white';
         const otherPlayer = getPlayer(this.gameId, otherColor);
         if(getPlayer(this.gameId, 'black') === 'ai'){//player already has a color
+            setPlayer(this.gameId, 'white', playerId);
             return 'AI game, your color is white.';
         }
         if(playerId === choicePlayer || playerId === otherPlayer){//player already has a color
