@@ -70,6 +70,28 @@ exports.handle = async (req, res) => {
     }
 }
 
+exports.chooseColor = async (req, res) => {
+    const { gameId, playerId, payload } = req.body;
+    const log = new LogSession(gameId);
+    try {
+        const { color } = payload;
+        log.addEvent('Request received choose color' + color);
+        const svc = new ChessGameService(gameId, log);
+        const result = svc.chooseColor(playerId, color);
+        if (result) {
+            return res.json(ApiResponse.messageResponse(
+                result
+            ));
+        } else {
+            throw new ApiError("Failed to choose color", 400);
+        }
+    } catch (err) {
+        res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
+    } finally {
+        log.writeToFile();
+    }
+}
+
 //gets current game state
 function getState(svc){
     return state = {

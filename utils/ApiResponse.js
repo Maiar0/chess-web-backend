@@ -23,5 +23,10 @@ class ApiResponse {
         checkMate
     });
   }
+  static messageResponse(message) {// Create a message response
+    return ApiResponse.success({
+        message
+    });
+  }
 }
 module.exports = ApiResponse; // Export the ApiResponse class for use in other modules
