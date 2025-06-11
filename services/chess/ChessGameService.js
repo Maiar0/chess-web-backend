@@ -93,8 +93,6 @@ class ChessGameService{
     requestDraw(){
         if(parseInt(this.chessBoard.fen.split(' ')[4], 10)  >= 50){
             return true;
-        }else if(parseInt(this.chessBoard.fen.split(' ')[5]) >= 100){
-            return true;
         }else{
             //ask both parties if they want to agree to draw
         }

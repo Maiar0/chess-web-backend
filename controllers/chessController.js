@@ -3,6 +3,7 @@ const MoveUtils = require('../utils/chess/MoveUtils');
 const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 const LogSession = require('../utils/logging/LogSession');
+const req = require('express/lib/request');
 
 
 
@@ -88,6 +89,34 @@ exports.chooseColor = async (req, res) => {
     } catch (err) {
         res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
     } finally {
+        log.writeToFile();
+    }
+}
+exports.requestPrematureEnd = async (req, res) => {
+    const { io } = require('./chessSocketController');
+    const {gameId, payload, playerId} = req.body;
+    const log = new LogSession(gameId);
+    const svc = new ChessGameService(gameId, log);
+    try{
+        const { message } = payload;
+        switch(message){
+            case 'draw':
+                if(svc.requestDraw()){
+                    io.to(gameId).emit('drawClaimed');
+                }else{
+                    
+                }
+                break;
+            case 'resign':
+                io.to(gameId).emit('resigned', playerId);
+                //emit resign;
+                break;
+            default:
+                throw new ApiError("Bad request: " + action ,400);
+        }
+    }catch(err){
+        res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
+    }finally{
         log.writeToFile();
     }
 }
