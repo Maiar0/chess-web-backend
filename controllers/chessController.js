@@ -5,77 +5,14 @@ const ApiError = require('../utils/ApiError');
 const LogSession = require('../utils/logging/LogSession');
 const req = require('express/lib/request');
 
-
-
-exports.handle = async (req, res) => {
-    const { io } = require('./chessSocketController');
-    console.log('-----------------Recieved Request-----------------');
-    const {action, gameId, payload, playerId} = req.body;
-    const log = new LogSession(gameId);
-    let svc = new ChessGameService(gameId, log);
-    try{
-        let result = false;
-        const {from, to, promoteTo, isAi} = payload;
-        
-        log.addEvent('Request received' + JSON.stringify(getState(svc)));
-
-        switch(action){
-            case 'move':
-                result = svc.requestMove(from, to, promoteTo, playerId); 
-                if(svc.isAisTurn()){
-                    svc = new ChessGameService(gameId, log); // Reinitialize to ensure fresh state for AI processing
-                    result = await svc.processAiMove(); // Process AI's turn if it's AI's turn
-                }
-                const state = getState(svc); // get the game state after the move
-                io.to(gameId).emit('gameState', state); // Emit the game state to all connected clients in the room
-                log.addEvent('Response State:' + JSON.stringify(state));
-                break;
-            case 'newGame':
-                if(svc.newGame(isAi)){
-                    console.log('-----------------New game started',isAi, '---------------');
-                    result = true;
-                }
-                break;
-            case 'info':
-            if(svc.infoGame(playerId)){
-                console.log('-----------------Game info requested', gameId,'---------------------');
-                log.addEvent('Info Request State:' + JSON.stringify(getState(svc)));
-                result = true;
-            }
-                break;
-            default: 
-                throw new ApiError("Bad request: " + action ,400);
-        }
-        console.log('-----------------Request Completed-----------------');
-        let responseEnvelope = null; // Initialize the response envelope
-        if(result){
-            responseEnvelope = ApiResponse.successResponse(//TODO:: we should grab data from database?
-                svc.chessBoard.fen, // Get the FEN string from the chess board
-                svc.gameId, // Get the game ID
-                svc.chessBoard.activeColor, // Get the active color (turn)
-                MoveUtils.isKingInCheck(svc.chessBoard.fen), // Check if the active color is in check
-                svc.capturedString,// Get the captured pieces
-                svc.CheckMate,
-                svc.status
-            );
-        }else{
-            responseEnvelope = ApiResponse.error("Unkown Error", 400); // Return an error response if the move is invalid
-        }
-        return res.json(responseEnvelope); // Return the response envelope as JSON
-    }catch (err) {
-        const status = err.status || 500;
-        res.status(status).json(ApiResponse.error(err.message, status));
-        log.addEvent('Error:' + err);
-    } finally{
-        log.writeToFile();
-    }
-}
 exports.requestMove = async (req, res) => {
+    console.log('Request move received');
     const { io } = require('./chessSocketController');
-    const {action, gameId, payload, playerId} = req.body;   
+    const {gameId, payload, playerId} = req.body;   
     const log = new LogSession(gameId);
     let svc = new ChessGameService(gameId, log);
     try{
+        const { from, to, promoteTo } = payload;
         result = svc.requestMove(from, to, promoteTo, playerId); 
         if(svc.isAisTurn()){
             svc = new ChessGameService(gameId, log); // Reinitialize to ensure fresh state for AI processing
@@ -93,10 +30,12 @@ exports.requestMove = async (req, res) => {
         log.addEvent('Error:' + err);
     }finally{
         log.writeToFile();
+        console.log('Request move response sent');
     }
 }
 //instantiate a new game
 exports.newGame = async (req, res) => {
+    console.log('New game request received');
     const {gameId, playerId, payload} = req.body;
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
@@ -116,11 +55,13 @@ exports.newGame = async (req, res) => {
         log.addEvent('Error:' + err);
     } finally {
         log.writeToFile();
+        console.log('New game request response sent');
     }
 }
 //For getting state information about game
 exports.getInfo = async (req, res) => {
-    const { gameId, playerId, payload } = req.body;
+    console.log('Get game info request received');
+    const { gameId, playerId } = req.body;
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
 
@@ -138,10 +79,12 @@ exports.getInfo = async (req, res) => {
         res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
     } finally {
         log.writeToFile();
+        console.log('Get game info request response sent');
     }
 }
 
 exports.chooseColor = async (req, res) => {
+    console.log('Choose color request received');
     const { gameId, playerId, payload } = req.body;
     const log = new LogSession(gameId);
     try {
@@ -162,9 +105,11 @@ exports.chooseColor = async (req, res) => {
         log.addEvent('Error:' + err);
     } finally {
         log.writeToFile();
+        console.log('Choose color request response sent');
     }
 }
 exports.requestPrematureEnd = async (req, res) => {
+    console.log('Request premature end received');
     const { io } = require('./chessSocketController');
     const {gameId, payload, playerId} = req.body;
     const log = new LogSession(gameId);
@@ -178,10 +123,12 @@ exports.requestPrematureEnd = async (req, res) => {
                 }else{
                     
                 }
+                //TODO:: I should save something to db here
                 break;
             case 'resign':
                 io.to(gameId).emit('resigned', playerId);
                 //emit resign;
+                //TODO:: I should save something to db here
                 break;
             default:
                 throw new ApiError("Bad request: " + action ,400);
@@ -190,6 +137,7 @@ exports.requestPrematureEnd = async (req, res) => {
         res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
     }finally{
         log.writeToFile();
+        console.log('Request premature end response sent');
     }
 }
 
