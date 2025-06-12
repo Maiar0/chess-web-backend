@@ -134,10 +134,39 @@ exports.requestPrematureEnd = async (req, res) => {
                 throw new ApiError("Bad request: " + action ,400);
         }
     }catch(err){
-        res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
+        const status = err.status || 500;
+        res.status(status).json(ApiResponse.error(err.message, status));
+        log.addEvent('Error:' + err);
     }finally{
         log.writeToFile();
         console.log('Request premature end response sent');
+    }
+}
+exports.drawResponse = async (req, res) => {
+    console.log('Request drawResponse end received');
+    const { io } = require('./chessSocketController');
+    const {gameId, payload, playerId} = req.body;
+    const log = new LogSession(gameId);
+    const svc = new ChessGameService(gameId, log);
+    try{
+        const { accepted } = payload;
+        //get playerId color
+        if(accepted){
+            //save response to DB
+            //check if both responses are true
+            //if true emit confirmation of a draw
+            //if false send success response
+        }else{
+            //change both users db fields to false
+            //emit draw offer declined {player color}
+        }
+    }catch(err){
+        const status = err.status || 500;
+        res.status(status).json(ApiResponse.error(err.message, status));
+        log.addEvent('Error:' + err);
+    }finally{
+        log.writeToFile();
+        console.log('Request drawResponse end response sent');
     }
 }
 

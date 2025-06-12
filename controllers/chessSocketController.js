@@ -28,7 +28,6 @@ function initializeSocketHandlers(io) {
     // This allows the front end to know “yes, we shook hands.”
     socket.emit('handshakeAck', { success: true });
 
-    //TODO:: register any number of custom events
     //registers player id with the socket.id
     socket.on('registerPlayer', (playerId) => {
       console.log(`Registering playerId="${playerId}" with socket="${socket.id}"`);
@@ -40,6 +39,12 @@ function initializeSocketHandlers(io) {
       console.log(`Socket "${socket.id}" joining room "${gameId}"`);
       socket.join(gameId);
     });
+
+    //Player requests a draw we Offer Draw to players
+    socket.on('offerDraw', ({ gameId, playerId }) => {
+      //CHECK THAT BOTH DRAW DBS ARE FALSE BEFORE ASKING
+      io.to(gameId).emit('drawOffered', { by: playerId })
+  })
 
     // Always remember to handle disconnect
     socket.on('disconnect', (reason) => {
