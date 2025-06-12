@@ -70,6 +70,76 @@ exports.handle = async (req, res) => {
         log.writeToFile();
     }
 }
+exports.requestMove = async (req, res) => {
+    const { io } = require('./chessSocketController');
+    const {action, gameId, payload, playerId} = req.body;   
+    const log = new LogSession(gameId);
+    let svc = new ChessGameService(gameId, log);
+    try{
+        result = svc.requestMove(from, to, promoteTo, playerId); 
+        if(svc.isAisTurn()){
+            svc = new ChessGameService(gameId, log); // Reinitialize to ensure fresh state for AI processing
+            result = await svc.processAiMove(); // Process AI's turn if it's AI's turn
+        }
+        const state = getState(svc); // get the game state after the move
+        io.to(gameId).emit('gameState', state); // Emit the game state to all connected clients in the room
+        log.addEvent('Response State:' + JSON.stringify(state));
+        return res.json(ApiResponse.success(
+            state // TODO:: should we even return state socket shoud take care of that?
+        )); 
+    }catch(err){
+        const status = err.status || 500;
+        res.status(status).json(ApiResponse.error(err.message, status));
+        log.addEvent('Error:' + err);
+    }finally{
+        log.writeToFile();
+    }
+}
+//instantiate a new game
+exports.newGame = async (req, res) => {
+    const {gameId, playerId, payload} = req.body;
+    const log = new LogSession(gameId);
+    const svc = new ChessGameService(gameId, log);
+    try {
+        log.addEvent('Request received new game');
+        const { isAi } = payload;
+        if (svc.newGame(isAi)) {
+            return res.json(ApiResponse.success(
+                state = getState(svc) // Get the current game state
+            ));
+        } else {
+            throw new ApiError("Failed to start a new game", 400);
+        }
+    } catch (err) {
+        const status = err.status || 500;
+        res.status(status).json(ApiResponse.error(err.message, status));
+        log.addEvent('Error:' + err);
+    } finally {
+        log.writeToFile();
+    }
+}
+//For getting state information about game
+exports.getInfo = async (req, res) => {
+    const { gameId, playerId, payload } = req.body;
+    const log = new LogSession(gameId);
+    const svc = new ChessGameService(gameId, log);
+
+    try {
+        log.addEvent('Request received get info');
+        const result = svc.infoGame(playerId);
+        if (result) {
+            return res.json(ApiResponse.success(
+                getState(svc) // Get the current game state
+            ));
+        } else {
+            throw new ApiError("Failed to get game info", 400);
+        }
+    } catch (err) {
+        res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
+    } finally {
+        log.writeToFile();
+    }
+}
 
 exports.chooseColor = async (req, res) => {
     const { gameId, playerId, payload } = req.body;
@@ -87,7 +157,9 @@ exports.chooseColor = async (req, res) => {
             throw new ApiError("Failed to choose color", 400);
         }
     } catch (err) {
-        res.status(err.status || 500).json(ApiResponse.error(err.message, err.status || 500));
+        const status = err.status || 500;
+        res.status(status).json(ApiResponse.error(err.message, status));
+        log.addEvent('Error:' + err);
     } finally {
         log.writeToFile();
     }

@@ -13,14 +13,20 @@ class ApiResponse {
     return new ApiResponse('error', null, {code : status, message});
   }
 
-  static successResponse(fen, gameId, activeColor, inCheck, capturedPieces, checkMate) {// Create normal success response
+  static successResponse(fen, gameId, activeColor, inCheck, capturedPieces, checkMate, status) {// Create normal success response
     return ApiResponse.success({
         fen,
         gameId,
         activeColor,
         inCheck,
         capturedPieces,
-        checkMate
+        checkMate,
+        status
+    });
+  }
+  static stateResponse(state) {// Create state response
+    return ApiResponse.success({
+        state
     });
   }
   static messageResponse(message) {// Create a message response
