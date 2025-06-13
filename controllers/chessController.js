@@ -4,6 +4,7 @@ const ChessGameService = require('../services/chess/ChessGameService');
 const ApiError = require('../utils/ApiError');
 const LogSession = require('../utils/logging/LogSession');
 const req = require('express/lib/request');
+const ChessDbManager = require('../db/ChessDbManager');
 
 exports.requestMove = async (req, res) => {
     console.log('Request move received');
@@ -148,25 +149,44 @@ exports.drawResponse = async (req, res) => {
     const {gameId, payload, playerId} = req.body;
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
+    const db = new ChessDbManager();
     try{
         const { accept } = payload;
         //get playerId color
-        if(accept === 'accept'){
+        const accepted = accept === 'Accept' ? 1: 0;
+        let drawStatus = db.getDrawStatus(gameId);
+        if(accepted === 1){
             console.log('Player ' + playerId + ' accepted the draw offer');
-            //if AI Game, set both players to draw
-            //save response to DB
-            //check if both responses are true
-            //if true emit confirmation of a draw
-            //if false send success response
+            if(db.getPlayer(gameId, 'black') === 'ai'){//check if AI and set alertnate to true
+                db.setDrawStatus(gameId, 'black', accepted)
+            }
+            const playerColor = db.getPlayerColor(gameId, playerId);
+            if(!playerColor){
+                console.log(`Player${playerId} cant not respond to draw in this game ${gameId}`);
+                return
+            }
+            db.setDrawStatus(gameId, playerColor, accepted);//Save response to DB if playerId calls back correct color
+            drawStatus = db.getDrawStatus(gameId);
+            if(drawStatus.black && drawStatus.white){//Check if both users have accepted draw
+                io.to(gameId).emit('gameDrawn', drawStatus);//Emit if we are drawing game
+            }else{
+                //do nothing if both answers are not true
+            }
         }else{
             console.log('Player ' + playerId + ' declined the draw offer');
-            //change both users db fields to false
-            //emit draw offer declined {player color}
+            db.setDrawStatus(gameId, 'white', 0);//reset DB's
+            db.setDrawStatus(gameId, 'black', 0);
+            drawStatus = db.getDrawStatus(gameId);
+            io.to(gameId).emit('drawFailed', drawStatus)
         }
+        drawStatus = db.getDrawStatus(gameId);
+        return res.json(ApiResponse.success(
+                drawStatus // Get the current game state
+            ));
     }catch(err){
         const status = err.status || 500;
         res.status(status).json(ApiResponse.error(err.message, status));
-        log.addEvent('Error:' + err);
+        log.addEvent(`Error: ${err}`);
     }finally{
         log.writeToFile();
         console.log('Request drawResponse response sent');
