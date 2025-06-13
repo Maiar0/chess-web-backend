@@ -109,31 +109,19 @@ exports.chooseColor = async (req, res) => {
         console.log('Choose color request response sent');
     }
 }
-exports.requestPrematureEnd = async (req, res) => {
-    console.log('Request premature end received');
+exports.resign = async (req, res) => {
+    console.log('Request resign received');
     const { io } = require('./chessSocketController');
     const {gameId, payload, playerId} = req.body;
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
+    const db = new ChessDbManager();
     try{
-        const { message } = payload;
-        switch(message){
-            case 'draw':
-                if(svc.requestDraw()){
-                    io.to(gameId).emit('drawClaimed');
-                }else{
-                    
-                }
-                //TODO:: I should save something to db here
-                break;
-            case 'resign':
-                io.to(gameId).emit('resigned', playerId);
-                //emit resign;
-                //TODO:: I should save something to db here
-                break;
-            default:
-                throw new ApiError("Bad request: " + action ,400);
+        const { resign } = payload;
+        if(resign){
+            io.to(gameId).emit('resignation',{ playerId: playerId, color: db.getPlayerColor(gameId, playerId) })
         }
+        
     }catch(err){
         const status = err.status || 500;
         res.status(status).json(ApiResponse.error(err.message, status));
