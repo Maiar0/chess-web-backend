@@ -143,20 +143,23 @@ exports.requestPrematureEnd = async (req, res) => {
     }
 }
 exports.drawResponse = async (req, res) => {
-    console.log('Request drawResponse end received');
+    console.log('Request drawResponse received');
     const { io } = require('./chessSocketController');
     const {gameId, payload, playerId} = req.body;
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
     try{
-        const { accepted } = payload;
+        const { accept } = payload;
         //get playerId color
-        if(accepted){
+        if(accept === 'accept'){
+            console.log('Player ' + playerId + ' accepted the draw offer');
+            //if AI Game, set both players to draw
             //save response to DB
             //check if both responses are true
             //if true emit confirmation of a draw
             //if false send success response
         }else{
+            console.log('Player ' + playerId + ' declined the draw offer');
             //change both users db fields to false
             //emit draw offer declined {player color}
         }
@@ -166,7 +169,7 @@ exports.drawResponse = async (req, res) => {
         log.addEvent('Error:' + err);
     }finally{
         log.writeToFile();
-        console.log('Request drawResponse end response sent');
+        console.log('Request drawResponse response sent');
     }
 }
 

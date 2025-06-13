@@ -1,5 +1,6 @@
 const {Server} = require('socket.io');
 const { get } = require('../routes/chessRoutes');
+const ChessDbManager = require('../db/ChessDbManager');
 /**
  * Called from server.js as:
  *    const io = new Server(httpServer, { … });
@@ -42,8 +43,16 @@ function initializeSocketHandlers(io) {
 
     //Player requests a draw we Offer Draw to players
     socket.on('offerDraw', ({ gameId, playerId }) => {
-      //CHECK THAT BOTH DRAW DBS ARE FALSE BEFORE ASKING
-      io.to(gameId).emit('drawOffered', { by: playerId })
+      console.log(`Player "${playerId}" is offering a draw in game "${gameId}"`);
+      const db = new ChessDbManager()
+      if (!db) {
+        console.error(`Game "${gameId}" not found.`);
+        return;
+      }
+      db.setDrawStatus(gameId, 'white', false); // Set the draw status in the database
+      db.setDrawStatus(gameId, 'black', false); 
+      const color = db.getPlayerColor(gameId, playerId);
+      io.to(gameId).emit('drawOffered', { by: color })
   })
 
     // Always remember to handle disconnect

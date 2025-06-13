@@ -121,6 +121,30 @@ class ChessDbManager {
     
         return row.captures;
     }
+    getPlayerColor(gameId, playerId) {
+    const db = this.getGame(gameId);
+    if (!db) return null;
+
+    // Load both columns in one query
+    const stmt = db.prepare(`
+      SELECT white, black
+      FROM game_state
+      WHERE id = ?
+    `);
+    const row = stmt.get(1);
+    db.close();
+
+    if (!row) {
+      throw new ApiError(
+        'No game state found. Check that the game ID is correct.',
+        404
+      );
+    }
+
+    if (row.white === playerId)  return 'white';
+    if (row.black === playerId)  return 'black';
+    return null;
+  }
     getPlayer(gameId, color) {
         const db = this.getGame(gameId);
         if (!db) return null;
