@@ -3,6 +3,7 @@ const MoveUtils = require('../../utils/chess/MoveUtils');
 const FenUtils = require('../../utils/chess/FenUtils');
 const {getBestMove} = require('../../utils/chess/StockFishUtil');
 const {createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures, getPlayer, setPlayer } = require('../../db/dbManager');
+const ChessDbManager = require('../../db/chessDbManager');
 const ApiError = require('../../utils/ApiError');
 
 class ChessGameService{
