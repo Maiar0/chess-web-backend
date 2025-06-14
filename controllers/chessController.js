@@ -146,6 +146,7 @@ exports.drawResponse = async (req, res) => {
         if(accepted === 1){
             console.log('Player ' + playerId + ' accepted the draw offer');
             if(db.getPlayer(gameId, 'black') === 'ai'){//check if AI and set alertnate to true
+                console.log(`Player is AI game, setting draw status for black to ${accepted}`);
                 db.setDrawStatus(gameId, 'black', accepted)
             }
             const playerColor = db.getPlayerColor(gameId, playerId);
@@ -155,8 +156,9 @@ exports.drawResponse = async (req, res) => {
             }
             db.setDrawStatus(gameId, playerColor, accepted);//Save response to DB if playerId calls back correct color
             drawStatus = db.getDrawStatus(gameId);
-            if(drawStatus.black && drawStatus.white){//Check if both users have accepted draw
-                io.to(gameId).emit('gameDrawn', drawStatus);//Emit if we are drawing game
+            if(drawStatus.black  && drawStatus.white ){//Check if both users have accepted draw
+                console.log('Both players accepted the draw offer');
+                io.to(gameId).emit('drawResult', drawStatus);//Emit if we are drawing game
             }else{
                 //do nothing if both answers are not true
             }
@@ -165,7 +167,7 @@ exports.drawResponse = async (req, res) => {
             db.setDrawStatus(gameId, 'white', 0);//reset DB's
             db.setDrawStatus(gameId, 'black', 0);
             drawStatus = db.getDrawStatus(gameId);
-            io.to(gameId).emit('drawFailed', drawStatus)
+            io.to(gameId).emit('drawResult', drawStatus)
         }
         drawStatus = db.getDrawStatus(gameId);
         return res.json(ApiResponse.success(

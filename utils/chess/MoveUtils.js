@@ -20,7 +20,9 @@ class MoveUtils{
         const pieces = dummyBoard.getPieces(dummyBoard.activeColor === 'w' ? 'white': 'black');//get all pieces to test
         const king = pieces.find(p => p.constructor.name === 'King');//get King
         if(!king) throw new ApiError('No king found on board.', 400);
-        if (king.getMoves(dummyBoard).length > 0) return false;
+        if (king.getMoves(dummyBoard).length > 0){
+            logOneOff("Not Check Mate:" + JSON.stringify(king) + JSON.stringify(king.getMoves(dummyBoard)));
+            return false;}
         for(let i = 0; i < pieces.length; ++i){
             const piece = pieces[i];
             const moves = piece.getMoves(dummyBoard);
