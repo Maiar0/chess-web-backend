@@ -119,7 +119,7 @@ exports.resign = async (req, res) => {
     try{
         const { resign } = payload;
         if(resign){
-            io.to(gameId).emit('resignation',{ playerId: playerId, color: db.getPlayerColor(gameId, playerId) })
+            io.to(gameId).emit('resignation',{ playerId: playerId, by: db.getPlayerColor(gameId, playerId) })
         }
         
     }catch(err){

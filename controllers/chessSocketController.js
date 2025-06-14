@@ -1,4 +1,4 @@
-const {Server} = require('socket.io');
+const { Server } = require('socket.io');
 const { get } = require('../routes/chessRoutes');
 const ChessDbManager = require('../db/ChessDbManager');
 /**
@@ -50,10 +50,10 @@ function initializeSocketHandlers(io) {
         return;
       }
       db.setDrawStatus(gameId, 'white', false); // Set the draw status in the database
-      db.setDrawStatus(gameId, 'black', false); 
+      db.setDrawStatus(gameId, 'black', false);
       const color = db.getPlayerColor(gameId, playerId);
       io.to(gameId).emit('drawOffered', { by: color })
-  })
+    })
 
     // Always remember to handle disconnect
     socket.on('disconnect', (reason) => {
