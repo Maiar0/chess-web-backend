@@ -85,6 +85,7 @@ class ChessGameService{
         if(this.validateMove(from,to)){//Check if piece can move
             const piece = this.chessBoard.getPiece(from.x, from.y);
             if(this.chessBoard.move(from, to, promoteTo)){//move is completed
+                this.log.addEvent('END TURN SHOULD TRIGGER NOW');
                 this.endTurn();//end turn
                 this.log.addEvent('Move successful From:' + JSON.stringify(from) +'To:' +  JSON.stringify(to) + 'promoteChar:' + JSON.stringify(promoteTo));
             }
@@ -152,8 +153,13 @@ class ChessGameService{
         if(this.chessBoard.activeColor === 'b') this.chessBoard.fullmove =  (parseInt(this.chessBoard.fullmove,10) + 1).toString();
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
         this.saveFen(); // Save the current FEN string to the database
+        this.log.addEvent('End Turn: isKinginCheck ' + MoveUtils.isKingInCheck(this.chessBoard.fen));
+        const checkResult = MoveUtils.isKingInCheck(this.chessBoard.fen);
+        this.log.addEvent('Check Result: ' + checkResult);
+        const checkMateResult = MoveUtils.simulationKingCheckMate(this.chessBoard.fen);
+        this.log.addEvent('Check Mate Result: ' + checkMateResult);
         if(MoveUtils.simulationKingCheckMate(this.chessBoard.fen)){
-            console.log("CheckMate")
+            this.log.addEvent('Check Mate detected');
             this.CheckMate = true;
             let pieces = this.chessBoard.getPieces(this.chessBoard.activeColor === 'w' ? 'white' : 'black');
             for(let i = 0; i < pieces.length; ++i){
