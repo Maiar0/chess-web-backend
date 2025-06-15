@@ -167,7 +167,8 @@ exports.drawResponse = async (req, res) => {
             db.setDrawStatus(gameId, 'white', 0);//reset DB's
             db.setDrawStatus(gameId, 'black', 0);
             drawStatus = db.getDrawStatus(gameId);
-            io.to(gameId).emit('drawResult', drawStatus)
+            const by = db.getPlayerColor(gameId, playerId);
+            io.to(gameId).emit('drawResult', {by: by, drawStatus}); // Emit the draw result to all connected clients in the room
         }
         drawStatus = db.getDrawStatus(gameId);
         return res.json(ApiResponse.success(
