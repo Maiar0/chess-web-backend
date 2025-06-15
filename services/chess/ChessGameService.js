@@ -154,8 +154,6 @@ class ChessGameService{
         this.chessBoard.activeColor = this.chessBoard.activeColor === 'w' ? 'b' : 'w';//switch active color
         this.saveFen(); // Save the current FEN string to the database
         this.log.addEvent('End Turn: isKinginCheck ' + MoveUtils.isKingInCheck(this.chessBoard.fen));
-        const checkResult = MoveUtils.isKingInCheck(this.chessBoard.fen);
-        this.log.addEvent('Check Result: ' + checkResult);
         const checkMateResult = MoveUtils.simulationKingCheckMate(this.chessBoard.fen);
         this.log.addEvent('Check Mate Result: ' + checkMateResult);
         if(MoveUtils.simulationKingCheckMate(this.chessBoard.fen)){
@@ -188,7 +186,7 @@ class ChessGameService{
         }else if(materialDraw){
             return 'materialdraw';
         }else if(this.chessBoard.fen.split(' ')[4] >= 50){
-            return 'claimDraw';
+            return 'claimdraw';
         }else{
             return 'Active';
         }

@@ -117,6 +117,10 @@ exports.resign = async (req, res) => {
     const svc = new ChessGameService(gameId, log);
     const db = new ChessDbManager();
     try{
+        const color = db.getPlayerColor(gameId, playerId);
+        if(!color){
+            throw new ApiError("Player is not in the game", 400);
+        }
         const { resign } = payload;
         if(resign){
             io.to(gameId).emit('resignation',{ playerId: playerId, by: db.getPlayerColor(gameId, playerId) })
@@ -181,6 +185,34 @@ exports.drawResponse = async (req, res) => {
     }finally{
         log.writeToFile();
         console.log('Request drawResponse response sent');
+    }
+}
+exports.claimDraw = async (req, res) => {
+    console.log('Request claimDraw received');
+    const { io } = require('./chessSocketController');
+    const {gameId, playerId} = req.body;
+    const log = new LogSession(gameId);
+    const svc = new ChessGameService(gameId, log);
+    try{
+        const color = db.getPlayerColor(gameId, playerId);
+        if(!color){
+            throw new ApiError("Player is not in the game", 400);
+        }
+        if(svc.evaluateStatus().includes('draw')){
+            io.to(gameId).emit('drawClaimed', { by: color });
+        }else{
+            throw new ApiError("Claim draw failed, game is not drawable", 400);
+        }
+        return res.json(ApiResponse.success(
+            getState(svc) // Get the current game state
+        ));
+    }catch(err){
+        const status = err.status || 500;
+        res.status(status).json(ApiResponse.error(err.message, status));
+        log.addEvent('Error:' + err);
+    }finally{
+        log.writeToFile();
+        console.log('Request claimDraw response sent');
     }
 }
 
