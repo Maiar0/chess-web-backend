@@ -193,6 +193,7 @@ exports.claimDraw = async (req, res) => {
     const {gameId, playerId} = req.body;
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
+    const db = new ChessDbManager();
     try{
         const color = db.getPlayerColor(gameId, playerId);
         if(!color){
