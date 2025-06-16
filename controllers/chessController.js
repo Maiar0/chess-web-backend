@@ -216,8 +216,19 @@ exports.claimDraw = async (req, res) => {
         console.log('Request claimDraw response sent');
     }
 }
-
-//gets current game state
+/**
+ * Retrieves the current state of the chess game from the provided service object.
+ *
+ * @param {Object} svc - The service object containing game state information.
+ * @param {Object} svc.chessBoard - The chess board object.
+ * @param {string} svc.chessBoard.fen - The FEN string representing the board state.
+ * @param {string} svc.gameId - The unique identifier for the game.
+ * @param {string} svc.chessBoard.activeColor - The color whose turn it is to move.
+ * @param {string} svc.capturedString - A string representing captured pieces.
+ * @param {boolean} svc.CheckMate - Indicates if the game is in checkmate.
+ * @param {string} svc.status - The current status of the game.
+ * @returns {Object} The current state of the chess game, including FEN, game ID, active color, check status, captured pieces, checkmate status, and game status.
+ */
 function getState(svc){
     return state = {
                     fen: svc.chessBoard.fen, // Get the FEN string from the gameservice
