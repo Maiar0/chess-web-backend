@@ -1,6 +1,11 @@
 const ApiError = require('../../../utils/ApiError');
 
 class ChessPiece{//TODO:: Restucture for position?
+    /**
+     * Creates an instance of a chess piece.
+     * @param {'white'|'black'} color - The color of the chess piece.
+     * @param {{ x: number, y: number }} position - The position of the piece on the board (0-7 for both x and y).
+     */
     constructor(color, position) {
         this.color = color; // 'white' or 'black'
         this.position = position; // { x: 0-7, y: 0-7 }
