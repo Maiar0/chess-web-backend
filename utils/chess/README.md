@@ -2,9 +2,8 @@
 
 # ♟️ utils/chess/
 
-````markdown
 This folder contains chess-specific utility modules that support game validation, FEN parsing, AI integration, and rule enforcement. These utilities are used throughout the game service, controller, and board logic.
-````
+
 ---
 
 ## 📁 Modules Overview
