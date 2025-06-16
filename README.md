@@ -147,7 +147,5 @@ This project is licensed under the [ISC License](https://opensource.org/licenses
 Dennis Ward II
 [GitHub Profile](https://github.com/Maiar0)
 
-```
-
 ---
 
