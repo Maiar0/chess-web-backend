@@ -9,6 +9,17 @@ const path = require('path');
  * @param {string} message      — The log message text.
  * @param {object} context      - context possible
  */
+/**
+ * Logs a one-off message to a daily log file, creating the logs directory if necessary.
+ *
+ * The log entry is timestamped and optionally tagged with a game ID from the context.
+ * The log file is named after the current date (e.g., "2025-06-05.txt") and stored in the standard logs directory.
+ *
+ * @param {string} id - An identifier for the log entry (e.g., user ID, event type).
+ * @param {string} message - The message to log.
+ * @param {Object} [context={}] - Optional context for the log entry.
+ * @param {string|number} [context.gameId] - Optional game ID to tag the log entry.
+ */
 function logOneOff(id, message, context = {}) {
     // Determine the standard logs directory (same as LogSession.writeToFile)
     const logDir = path.join(__dirname, '../../logs');
