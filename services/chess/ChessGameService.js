@@ -2,23 +2,23 @@ const ChessBoard = require('../../domain/chess/board/ChessBoard');
 const MoveUtils = require('../../utils/chess/MoveUtils');
 const FenUtils = require('../../utils/chess/FenUtils');
 const {getBestMove} = require('../../utils/chess/StockFishUtil');
-const {createGameDB, getGameFen, setGameFen, setGameCaptures, getGameCaptures, getPlayer, setPlayer } = require('../../db/dbManager');
 const ChessDbManager = require('../../db/ChessDbManager');
 const ApiError = require('../../utils/ApiError');
 
 class ChessGameService{
     constructor(gameId, log){
         this.log = log; // Initialize the log session
+        this.db = new ChessDbManager(); //init DB
         if(gameId === undefined || gameId === null || gameId === '') {
             this.gameId = this.createGameId();
-            createGameDB(this.gameId);
+            this.db.createGameDB(this.gameId);//TODO:: Test
         }else{
             this.gameId = gameId;
         }
-        this.capturedString = getGameCaptures(gameId);
-        this.chessBoard = new ChessBoard(getGameFen(this.gameId), {captures : this.capturedString}); // Create a new chess board using the FEN string
+        this.capturedString = this.db.getGameCaptures(gameId);
+        this.chessBoard = new ChessBoard(this.db.getGameFen(this.gameId), {captures : this.capturedString}); // Create a new chess board using the FEN string
         this.CheckMate = false; //TODO:: this is a problem
-        this.isAi = getPlayer(gameId, 'black') === 'ai'; // Flag to indicate if the game is against AI
+        this.isAi =this.db.getPlayer(gameId, 'black') === 'ai'; // Flag to indicate if the game is against AI
         this.status = ''; // Status of the game, can be used for additional information
     }
     /**
@@ -44,8 +44,8 @@ class ChessGameService{
      */
     newGame(isAi = false){
         if(isAi){
-            setPlayer(this.gameId, 'black', 'ai');
-            let player = getPlayer(this.gameId, 'black');
+            this.db.setPlayer(this.gameId, 'black', 'ai');//TODO:: Test
+            let player = this.db.getPlayer(this.gameId, 'black');
             this.log.addEvent('This is AI Game');
         }
         return true;
@@ -73,11 +73,11 @@ class ChessGameService{
             console.log('Invalid color choice:', color);
             throw new ApiError('Invalid color choice. Choose either "white" or "black".', 400);
         }
-        const choicePlayer = getPlayer(this.gameId, color);
+        const choicePlayer = this.db.getPlayer(this.gameId, color);
         const otherColor = color === 'white' ? 'black' : 'white';
-        const otherPlayer = getPlayer(this.gameId, otherColor);
-        if(getPlayer(this.gameId, 'black') === 'ai'){//player already has a color
-            setPlayer(this.gameId, 'white', playerId);
+        const otherPlayer = this.db.getPlayer(this.gameId, otherColor);
+        if(this.db.getPlayer(this.gameId, 'black') === 'ai'){//player already has a color
+            this.db.setPlayer(this.gameId, 'white', playerId);
             return 'AI game, your color is white.';
         }
         if(playerId === choicePlayer || playerId === otherPlayer){//player already has a color
@@ -85,10 +85,10 @@ class ChessGameService{
         }
         if(choicePlayer === ''){//choice availble 
             this.log.addEvent('Player ' + playerId + ' chose color: ' + color);
-            setPlayer(this.gameId, color, playerId);
+            this.db.setPlayer(this.gameId, color, playerId);
             return 'Successfully set color to ' + color;
         }else{
-            setPlayer(this.gameId, otherColor, playerId);//set other color
+            this.db.setPlayer(this.gameId, otherColor, playerId);//set other color
             return 'Color taken color set to ' + otherColor;
         }
         
@@ -146,7 +146,7 @@ class ChessGameService{
      */
     isPlayersTurn(playerId){
         const color = this.chessBoard.activeColor === 'w' ? 'white': 'black';
-        const currentPlayer = getPlayer(this.gameId, color)
+        const currentPlayer =this.db.getPlayer(this.gameId, color)
         if(playerId === currentPlayer){
             console.log('***Player can Move***');
             return true; // Player is allowed to make a move 
@@ -335,13 +335,13 @@ class ChessGameService{
         this.chessBoard.fen = this.chessBoard.createFen(); //update fen in service
         //set fen in DB
         let result = false;
-        if(setGameFen(this.gameId, this.chessBoard.fen) === 1){
+        if(this.db.setGameFen(this.gameId, this.chessBoard.fen) === 1){
             result = true;
         }else{
             return false;
         }
         //Set captured string in DB
-        if(setGameCaptures(this.gameId, FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces)) === 1){
+        if(this.db.setGameCaptures(this.gameId, FenUtils.parseCapturedPiece(this.chessBoard.capturedPieces)) === 1){
             result = true;
         }else{
             return false;
