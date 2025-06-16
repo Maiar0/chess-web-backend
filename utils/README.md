@@ -1,8 +1,8 @@
 
 # 🧰 utils/
-````markdown
+
 This folder contains general-purpose utility classes used across the backend application for standardized error handling and API responses.
-````
+
 ---
 
 ## 📄 Files
