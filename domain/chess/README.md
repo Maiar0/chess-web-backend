@@ -1,7 +1,7 @@
 # ♟️ domain/chess
-```markdown
+
 This folder contains the **core domain logic** for the chess game, including chessboard state management and individual piece behavior.
-```
+
 ---
 
 ## 🧱 Structure
