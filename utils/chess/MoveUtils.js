@@ -12,7 +12,7 @@ class MoveUtils{
      * @param {{x: number, y: number}} to - The coordinates to move the piece to.
      * @returns {boolean} Returns true if the king is in check after the simulated move, otherwise false.
      */
-    static simulationKingCheck(fen, from, to){//TODO:: Create Error codes to explain why kingInCheck
+    static simulationKingCheck(fen, from, to){//TODO:: Create Error messages to explain why kingInCheck
         const dummyBoard = new ChessBoard(fen);//fen
         let piece = dummyBoard.getPiece(from.x,from.y);//get piece at from
         dummyBoard.board[to.x][to.y] = piece;//move piece

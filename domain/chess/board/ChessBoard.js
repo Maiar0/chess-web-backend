@@ -13,7 +13,7 @@ class ChessBoard {
         let threatColor = this.activeColor === 'w' ? 'black' : 'white'; // Determine the color of the pieces to be threatened
         this.threatMap = Array.from({ length: 8 }, () => Array(8).fill(false)); // Initialize the threat map with false values
         
-        this.generateThreatMap(threatColor); // TODO:: we should make this use method not save to object.
+        this.generateThreatMap(threatColor);
         
     }
 
@@ -213,7 +213,7 @@ class ChessBoard {
      * @param {number} x - The x-coordinate (file) of the en passant target square.
      * @param {number} y - The y-coordinate (rank) of the en passant target square.
      */
-    setEnPassant(x,y){//TODO:: Eliminate this.
+    setEnPassant(x,y){
         this.enPassant = x.toString()+y.toString();
     }
 

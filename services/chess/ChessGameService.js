@@ -11,14 +11,14 @@ class ChessGameService{
         this.db = new ChessDbManager(); //init DB
         if(gameId === undefined || gameId === null || gameId === '') {
             this.gameId = this.createGameId();
-            this.db.createGame(this.gameId);//TODO:: Test
+            this.db.createGame(this.gameId);
         }else{
             this.gameId = gameId;
         }
         this.capturedString = this.db.getGameCaptures(this.gameId);
         this.chessBoard = new ChessBoard(this.db.getGameFen(this.gameId), {captures : this.capturedString}); // Create a new chess board using the FEN string
         
-        this.CheckMate = false; //TODO:: this is a problem
+        this.CheckMate = false; //TODO:: we should be able to remove this
         this.isAi =this.db.getPlayer(gameId, 'black') === 'ai'; // Flag to indicate if the game is against AI
         this.status = ''; // Status of the game, can be used for additional information
     }
@@ -45,7 +45,7 @@ class ChessGameService{
      */
     newGame(isAi = false){
         if(isAi){
-            this.db.setPlayer(this.gameId, 'black', 'ai');//TODO:: Test
+            this.db.setPlayer(this.gameId, 'black', 'ai');
             let player = this.db.getPlayer(this.gameId, 'black');
             this.log.addEvent('This is AI Game');
         }
@@ -156,7 +156,6 @@ class ChessGameService{
                 console.log('***AI can Move***');
                 return true; // AI is allowed to make a move
             }
-            //TODO:: to enable multiplayer, throw here.
             console.log('***Not Players turn***');
             return false; // Player is not allowed to make a move
         }
@@ -193,7 +192,7 @@ class ChessGameService{
      * @throws {ApiError} If the move is invalid for any reason.
      * @returns {boolean} Returns true if the move is valid.
      */
-    validateMove(from, to){// Validate the move requested by the user TODO:: Work on order of checks
+    validateMove(from, to){// Validate the move requested by the user
         let piece = this.chessBoard.getPiece(from.x,from.y);
         let board = this.chessBoard;
         if(piece === null) // Check if there is a piece at the from position

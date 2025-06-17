@@ -34,7 +34,7 @@ class ChessDbManager {
    * @param {string} gameId - The unique identifier for the chess game.
    * @returns {string} The file path to the created or opened game database.
    */
-  createGame(gameId) {//TODO:: Needs tested
+  createGame(gameId) {
     const dbPath = this.getDBPath(gameId);// Get the path to the game database
     console.log(`⚙️ ChessDbManager.createGame called for gameId="${gameId}"`);
     console.log(`   → dbDir = "${this.dbDir}"`);
@@ -123,7 +123,7 @@ class ChessDbManager {
    * @returns {number|null} The number of rows updated, or null if the game database does not exist.
    * @throws {ApiError} If no rows are updated (e.g., invalid game ID).
    */
-  setGameFen(gameId, fen) {//TODO:: Test
+  setGameFen(gameId, fen) {
     const db = this.getGame(gameId);
     if (!db) {
       return null; // If the database does not exist, return null

@@ -2,7 +2,7 @@ const fs    = require('fs');
 const path  = require('path'); 
 const Database = require('better-sqlite3');
 const { get } = require('http');
-//TODO:: change this to a class
+//TODO:: Should be able to remove this
 const initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // initial FEN string for chess
 let dbDir = path.join(__dirname, '..', 'games');// Directory to store game databases
 //so we can run tests
@@ -13,7 +13,7 @@ function getDBPath(gameId) {
   return path.join(dbDir, `${gameId}.db`);
 }
 
-function createGameDB(gameId){//TODO:: Needs tested
+function createGameDB(gameId){
     const dbPath = getDBPath(gameId);// Get the path to the game database
     if(!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, {recursive: true}); // if directory does not exist, create it
     const db = new Database(dbPath);//Create a new database or open an existing one
@@ -71,7 +71,7 @@ function getGameFen(gameId) {
     if (!row) throw new ApiError('No rows found. Check if the game ID is correct, or game has expired.', 404);
     return row.fen; // Return the FEN string from the database
 }
-function setGameFen(gameId, fen) {//TODO:: Test
+function setGameFen(gameId, fen) {
     const db = getGameDB(gameId);
     if (!db){
         return null; // If the database does not exist, return null

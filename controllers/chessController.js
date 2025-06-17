@@ -23,7 +23,7 @@ exports.requestMove = async (req, res) => {
         io.to(gameId).emit('gameState', state); // Emit the game state to all connected clients in the room
         log.addEvent('Response State:' + JSON.stringify(state));
         return res.json(ApiResponse.success(
-            state // TODO:: should we even return state socket shoud take care of that?
+            state 
         )); 
     }catch(err){
         const status = err.status || 500;

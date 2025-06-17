@@ -8,7 +8,7 @@ const NEW_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const GAMES_DIR = path.join(__dirname, 'games');
 
 function isGameOver(fen){
-    if(!fen.includes('k') && !fen.includes('K')){//TODO:: we dont remove king yet
+    if(!fen.includes('k') && !fen.includes('K')){
         return true;
     }
     return false;
@@ -18,7 +18,7 @@ function isOld(isoTime){
     const last = new Date(isoTime);
     const now = new Date();
     const ageHours = (now - last) / 36e5;
-    return ageHours > MAX_HOURS;//TODO:: remove if 1 week old this is from creation currently not last update we need to do a las tupdate in saveFen
+    return ageHours > MAX_HOURS;
 }
 function isGameStale(fen, isoTime){
     const last = new Date(isoTime);
