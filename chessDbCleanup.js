@@ -1,66 +1,66 @@
 const fs = require('fs');
 const path = require('path');
-const{ getGameFen, getLastMoveTime, deleteGameDB } = require('./db/dbManager');
+const ChessDbManager = require('./db/ChessDbManager');
 
 const MAX_HOURS = 168;
 const STALE_HOURS = 2;
 const NEW_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-const GAMES_DIR = path.join(__dirname, 'games');
 
-function isGameOver(fen){
-    if(!fen.includes('k') && !fen.includes('K')){
-        return true;
-    }
-    return false;
+// Initialize DB manager and games directory
+const dbManager = new ChessDbManager();
+const GAMES_DIR = dbManager.dbDir;
+
+function isGameOver(fen) {
+  return !fen.includes('k') || !fen.includes('K');
 }
 
-function isOld(isoTime){
-    const last = new Date(isoTime);
-    const now = new Date();
-    const ageHours = (now - last) / 36e5;
-    return ageHours > MAX_HOURS;
-}
-function isGameStale(fen, isoTime){
-    const last = new Date(isoTime);
-    const now = new Date();
-    const ageHours = (now - last) / 36e5;
-    if(fen === NEW_FEN && ageHours > STALE_HOURS){
-        return true;
-    }
-    return false;
+function hoursSince(isoTime) {
+  const last = new Date(isoTime);
+  const now = new Date();
+  return (now - last) / 36e5;
 }
 
-module.exports = async function cleanUpDbs() {
-  console.log("Running daily task at", new Date().toISOString());
-  const files = fs.readdirSync(GAMES_DIR);
-  for(const file of files){
-    if(!file.endsWith('.db')) continue;
+async function cleanUpDbs() {
+  console.log('Running cleanup at', new Date().toISOString());
+  let files;
+  try {
+    files = fs.readdirSync(GAMES_DIR);
+  } catch (err) {
+    console.error(`Failed to read games directory (${GAMES_DIR}):`, err.message);
+    return;
+  }
+
+  for (const file of files) {
+    if (!file.endsWith('.db')) continue;
 
     const gameId = path.basename(file, '.db');
-      const fen = getGameFen(gameId);
-      const lastMove = getLastMoveTime(gameId);
-      if(isGameStale(fen, lastMove) ){
-          deleteGameDB(gameId);
-          console.log(`Deleted Stale game: ${file}`);
-      }else if(isOld(lastMove)){
-          deleteGameDB(gameId);
-          console.log(`Deleted Old game: ${file}`);
-      }else if(isGameOver(fen)){
-          deleteGameDB(gameId);
-          console.log(`Deleted Over game: ${file}`);
-      }
-      console.error(`Error inspecting ${file}:`, err.message);
-  }
-};
-
-/*if (require.main === module) {
-  // File is being run directly (via `node chessDbCleanup.js`)
-  (async () => {
     try {
-      await module.exports();
+      const fen = dbManager.getGameFen(gameId);
+      const lastMove = dbManager.getLastMoveTime(gameId);
+      const ageHours = hoursSince(lastMove);
+
+      if (fen === NEW_FEN && ageHours > STALE_HOURS) {
+        dbManager.deleteGame(gameId);
+        console.log(`Deleted stale new game: ${file}`);
+      } else if (ageHours > MAX_HOURS) {
+        dbManager.deleteGame(gameId);
+        console.log(`Deleted old game: ${file}`);
+      } else if (isGameOver(fen)) {
+        dbManager.deleteGame(gameId);
+        console.log(`Deleted completed game: ${file}`);
+      }
     } catch (err) {
-      console.error("Daily task failed:", err);
-      process.exit(1);
+      console.error(`Error processing ${file}:`, err.message);
     }
-  })();
-}*/
+  }
+}
+
+module.exports = cleanUpDbs;
+
+// If run directly
+if (require.main === module) {
+  cleanUpDbs().catch(err => {
+    console.error('Cleanup failed:', err);
+    process.exit(1);
+  });
+}

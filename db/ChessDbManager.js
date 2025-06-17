@@ -70,7 +70,7 @@ class ChessDbManager {
    */
   getGame(gameId) {
     const dbPath = this.getDBPath(gameId);// Get the path to the game database
-    if (!fs.existsSync(dbPath)) throw new ApiError('DB does not exist!', 500); // if database does not exist, return null
+    if (!fs.existsSync(dbPath)) return null; // if database does not exist, return null
     return new Database(dbPath);
   }
   /**
