@@ -36,6 +36,9 @@ class ChessDbManager {
    */
   createGame(gameId) {//TODO:: Needs tested
     const dbPath = this.getDBPath(gameId);// Get the path to the game database
+    console.log(`⚙️ ChessDbManager.createGame called for gameId="${gameId}"`);
+    console.log(`   → dbDir = "${this.dbDir}"`);
+    console.log(`   → will create/open DB at dbPath = "${dbPath}"`);
     if (!fs.existsSync(this.dbDir)) fs.mkdirSync(this.dbDir, { recursive: true }); // if directory does not exist, create it
     const db = new Database(dbPath);//Create a new database or open an existing one
     db.exec(`
@@ -67,7 +70,7 @@ class ChessDbManager {
    */
   getGame(gameId) {
     const dbPath = this.getDBPath(gameId);// Get the path to the game database
-    if (!fs.existsSync(dbPath)) return null; // if database does not exist, return null
+    if (!fs.existsSync(dbPath)) throw new ApiError('DB does not exist!', 500); // if database does not exist, return null
     return new Database(dbPath);
   }
   /**
@@ -102,7 +105,7 @@ class ChessDbManager {
    */
   getGameFen(gameId) {
     const db = this.getGame(gameId);
-    if (!db) return null;
+    if (!db) throw new ApiError('Game not found. Check if the game ID is correct.', 404);
 
     // Assumes you have a table `game_state(id INTEGER PRIMARY KEY, fen TEXT, ...)`
     const stmt = db.prepare('SELECT fen FROM game_state WHERE id = ?');

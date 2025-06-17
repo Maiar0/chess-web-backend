@@ -11,12 +11,13 @@ class ChessGameService{
         this.db = new ChessDbManager(); //init DB
         if(gameId === undefined || gameId === null || gameId === '') {
             this.gameId = this.createGameId();
-            this.db.createGameDB(this.gameId);//TODO:: Test
+            this.db.createGame(this.gameId);//TODO:: Test
         }else{
             this.gameId = gameId;
         }
-        this.capturedString = this.db.getGameCaptures(gameId);
+        this.capturedString = this.db.getGameCaptures(this.gameId);
         this.chessBoard = new ChessBoard(this.db.getGameFen(this.gameId), {captures : this.capturedString}); // Create a new chess board using the FEN string
+        
         this.CheckMate = false; //TODO:: this is a problem
         this.isAi =this.db.getPlayer(gameId, 'black') === 'ai'; // Flag to indicate if the game is against AI
         this.status = ''; // Status of the game, can be used for additional information
