@@ -40,6 +40,11 @@ exports.newGame = async (req, res) => {
     const {gameId, playerId, payload} = req.body;
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
+
+    const analyticsDb = require("../analytics/analyticsDbManager");
+    const isNew = analyticsDb.trackPlayer(playerId);
+    if(isNew){log.addEvent('New Device Seen')}
+
     try {
         log.addEvent('Request received new game');
         const { isAi } = payload;
