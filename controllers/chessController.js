@@ -41,7 +41,7 @@ exports.newGame = async (req, res) => {
     const log = new LogSession(gameId);
     const svc = new ChessGameService(gameId, log);
 
-    const analyticsDb = require("../analytics/analyticsDbManager");
+    const analyticsDb = require("../db/analyticsDbManager");
     const isNew = analyticsDb.trackPlayer(playerId);
     if(isNew){log.addEvent('New Device Seen')}
 
